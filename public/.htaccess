@@ -1,0 +1,23 @@
+# TB-MAS Root .htaccess
+# Redirect to public directory if accessing root
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Set the base path for this folder
+RewriteBase /WEBSYS_FINAL_PROJECT/public/
+
+# Allow existing files and directories to load normally
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route EVERYTHING ELSE to index.php
+RewriteRule ^ index.php [QSA,L]
+
+
+
+
+
+
+
+

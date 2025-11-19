@@ -1,0 +1,31 @@
+# Environment files
+config/env.php
+.env
+
+# Composer
+/vendor/
+composer.lock
+
+# Uploads
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
