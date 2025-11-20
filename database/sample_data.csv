@@ -1,0 +1,6 @@
+patient_code,email,age,sex,barangay,contact_number,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history
+TB-2025-0001,20162396@s.ubaguio.edu,34,M,Bakakeng Central,09171234567,TB20250001,BC,P,DS,New
+TB-2025-0002,,46,F,Camp 7,09179876543,TB20250002,Unknown,EP,Unknown,Retreatment
+TB-2025-0003,testpatient3@example.com,29,M,BGH Compound,09175559999,TB20250003,CD,P,DR,New
+TB-2025-0004,,52,F,Pacdal,09981234567,TB20250004,BC,EP,DS,Unknown
+TB-2025-0005,testpatient5@example.com,41,M,Loakan Proper,09181231234,TB20250005,Unknown,P,Unknown,Retreatment
