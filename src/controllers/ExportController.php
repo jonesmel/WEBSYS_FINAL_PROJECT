@@ -3,14 +3,30 @@ require_once __DIR__ . '/../models/PatientModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class ExportController {
-
     public function patients_csv() {
         AuthMiddleware::requireRole(['super_admin', 'health_worker']);
 
-        $rows = PatientModel::exportAll();
+        $user = $_SESSION['user'];
+        $role = $user['role'];
+
+        // Health worker ONLY exports their barangay's patients
+        if ($role === 'health_worker') {
+            $barangay = $user['barangay_assigned'] ?? null;
+
+            if (!$barangay) {
+                echo "Barangay missing from user session.";
+                exit;
+            }
+
+            $rows = PatientModel::getAllByBarangay($barangay);
+
+        } else {
+            // Super admin exports all patients
+            $rows = PatientModel::exportAll();
+        }
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=patients_export_' . date('Ymd') . '.csv');
+        header('Content-Disposition: attachment; filename=patients_export_' . date('Ymd_His') . '.csv');
 
         $out = fopen('php://output', 'w');
 
