@@ -153,5 +153,19 @@ class ReferralModel {
     $stmt = getDB()->prepare("DELETE FROM referrals WHERE referral_id = ?");
     return $stmt->execute([$id]);
   }
+
+  public static function getReceivedByBarangay($barangay) {
+    $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT r.*, p.patient_code
+        FROM referrals r
+        LEFT JOIN patients p ON p.patient_id=r.patient_id
+        WHERE r.receiving_barangay = ? 
+        AND r.referral_status = 'received'
+        ORDER BY r.date_received DESC
+    ");
+    $stmt->execute([$barangay]);
+    return $stmt->fetchAll();
+  }
 }
 ?>
