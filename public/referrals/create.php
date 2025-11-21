@@ -69,6 +69,7 @@ require_once __DIR__.'/../partials/navbar.php';
     </div>
 
     <button class="btn btn-primary">Submit</button>
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index" class="btn btn-secondary mt-3">← Back</a>
   </form>
 </div>
 

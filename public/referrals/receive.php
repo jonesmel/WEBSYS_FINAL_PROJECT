@@ -17,7 +17,7 @@ require_once __DIR__.'/../partials/navbar.php';
     <div class="mb-3">
       <label class="form-label">Receiving Unit</label>
       <input type="text" name="receiving_unit" class="form-control" 
-             value="<?= htmlspecialchars($_SESSION['user']['barangay_assigned']) ?>" required>
+            value="<?= htmlspecialchars($_SESSION['user']['barangay_assigned']) ?>" readonly>
     </div>
 
     <div class="mb-3">
@@ -36,7 +36,7 @@ require_once __DIR__.'/../partials/navbar.php';
     </div>
 
     <button class="btn btn-success">Submit</button>
-
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index" class="btn btn-secondary mt-3">← Back</a>
   </form>
 
 </div>

@@ -4,7 +4,7 @@ require_once __DIR__.'/../partials/navbar.php';
 ?>
 
 <div class="container py-4">
-  <h3 class="mb-4">Incoming Referrals</h3>
+  <h3 class="mb-4">Received Referrals</h3>
 
   <div class="card shadow-sm p-3">
     <div class="table-responsive">
@@ -14,39 +14,35 @@ require_once __DIR__.'/../partials/navbar.php';
             <th>Referral Code</th>
             <th>Patient Code</th>
             <th>Sender Barangay</th>
+            <th>Date Received</th>
             <th>Status</th>
-            <th>Date</th>
-            <th width="150">Actions</th>
+            <th width="120">Actions</th>
           </tr>
         </thead>
+
         <tbody>
           <?php if ($rows): foreach ($rows as $r): ?>
             <tr>
               <td><?= htmlspecialchars($r['referral_code']) ?></td>
               <td><?= htmlspecialchars($r['patient_code']) ?></td>
               <td><?= htmlspecialchars($r['referring_unit']) ?></td>
+
+              <td><?= htmlspecialchars($r['date_received']) ?></td>
+
               <td>
-                <?php if ($r['referral_status'] === 'received'): ?>
-                    <span class="badge bg-success">Received</span>
-                <?php else: ?>
-                    <span class="badge bg-warning text-dark">Pending</span>
-                <?php endif; ?>
+                <span class="badge bg-success">Received</span>
               </td>
-              <td><?= htmlspecialchars($r['referral_date']) ?></td>
+
               <td>
                 <a class="btn btn-sm btn-primary"
                    href="/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=<?= $r['referral_id'] ?>">View</a>
-
-                <?php if (($r['referral_status'] ?? '') !== 'received'): ?>
-                  <a class="btn btn-sm btn-success"
-                     href="/WEBSYS_FINAL_PROJECT/public/?route=referral/receive&id=<?= $r['referral_id'] ?>">Receive</a>
-                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; else: ?>
-            <tr><td colspan="6" class="text-center text-muted">No incoming referrals.</td></tr>
+            <tr><td colspan="6" class="text-center text-muted">No received referrals.</td></tr>
           <?php endif; ?>
         </tbody>
+
       </table>
     </div>
   </div>

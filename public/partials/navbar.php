@@ -55,6 +55,7 @@ $user = $_SESSION['user'] ?? null;
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/sent">Sent Referrals</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/incoming">Incoming Referrals</a></li>
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/received">Received Referrals</a></li>
               </ul>
             </li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
@@ -67,10 +68,9 @@ $user = $_SESSION['user'] ?? null;
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/index">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/notifications">Notifications</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/referrals">Referrals</a></li>
+            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/my_medications">Medications</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/profile">Profile</a></li>
-
           <?php endif; ?>
-
         <?php endif; ?>
       </ul>
 
