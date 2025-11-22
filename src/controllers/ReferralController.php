@@ -109,14 +109,14 @@ class ReferralController {
 
     if (!$id) {
       Flash::set('danger','Missing ID');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
       exit;
     }
 
     $ref = ReferralModel::getById($id);
     if (!$ref) {
       Flash::set('danger','Referral not found');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
       exit;
     }
 
@@ -129,14 +129,14 @@ class ReferralController {
 
     if (!$id) {
       Flash::set('danger','Missing ID');
-      header('Location: /?route=referral/incoming');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/incoming');
       exit;
     }
 
     $ref = ReferralModel::getById($id);
     if (!$ref) {
       Flash::set('danger','Referral not found');
-      header('Location: /?route=referral/incoming');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/incoming');
       exit;
     }
 
@@ -146,14 +146,14 @@ class ReferralController {
         $ref['receiving_barangay'] !== $userBarangay) 
     {
       Flash::set('danger','Not authorized.');
-      header('Location: /?route=referral/incoming');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/incoming');
       exit;
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $data = [
-        'receiving_unit' => $_POST['receiving_unit'],
+        'receiving_unit' => $_SESSION['user']['barangay_assigned'],
         'receiving_officer' => $_POST['receiving_officer'],
         'date_received' => $_POST['date_received'] ?? date('Y-m-d'),
         'action_taken' => $_POST['action_taken'],
@@ -176,12 +176,12 @@ class ReferralController {
           'type' => 'referral_received_notification',
           'title' => 'Referral Received',
           'message' => "Referral {$ref['referral_code']} was marked as received.",
-          'link' => "/?route=referral/view&id=$id"
+          'link' => "/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id"
         ]);
       }
 
       Flash::set('success','Referral marked as received.');
-      header('Location: /?route=referral/incoming');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/incoming');
       exit;
     }
 
@@ -195,7 +195,7 @@ class ReferralController {
 
     if (!$id) {
       Flash::set('danger','Missing ID');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
       exit;
     }
 
@@ -203,7 +203,13 @@ class ReferralController {
 
     if (!$ref) {
       Flash::set('danger','Referral not found');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
+      exit;
+    }
+
+    if ($ref['referral_status'] === 'received') {
+      Flash::set('danger','Received referrals cannot be edited.');
+      header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
 
@@ -212,7 +218,7 @@ class ReferralController {
         $ref['created_by'] != $_SESSION['user']['user_id']) 
     {
       Flash::set('danger','Not authorized.');
-      header("Location: /?route=referral/view&id=$id");
+      header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
 
@@ -223,7 +229,7 @@ class ReferralController {
       $patient = PatientModel::getById($data['patient_id']);
       if (!$patient) {
         Flash::set('danger','Invalid patient.');
-        header("Location: /?route=referral/edit&id=$id");
+        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=$id");
         exit;
       }
 
@@ -236,7 +242,7 @@ class ReferralController {
                           $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '');
 
       Flash::set('success','Referral updated.');
-      header("Location: /?route=referral/view&id=$id");
+      header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
 
@@ -262,7 +268,7 @@ class ReferralController {
 
     if (!$id) {
       Flash::set('danger','Missing ID');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
       exit;
     }
 
@@ -273,7 +279,7 @@ class ReferralController {
                         $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '');
 
     Flash::set('success','Referral deleted.');
-    header('Location: /?route=referral/index');
+    header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
     exit;
   }
 
@@ -283,13 +289,21 @@ class ReferralController {
     $id = $_GET['id'] ?? null;
     if (!$id) {
       Flash::set('danger','Missing ID');
-      header('Location: /?route=referral/index');
+      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
       exit;
     }
 
     require_once __DIR__ . '/../helpers/PDFHelper.php';
     PDFHelper::generateReferralPDF($id);
     exit;
+  }
+
+  public function received() {
+    AuthMiddleware::requireRole(['health_worker']);
+    $barangay = $_SESSION['user']['barangay_assigned'];
+
+    $rows = ReferralModel::getReceivedByBarangay($barangay);
+    include __DIR__ . '/../../public/referrals/received.php';
   }
 }
 ?>

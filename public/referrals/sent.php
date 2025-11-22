@@ -29,13 +29,21 @@ require_once __DIR__.'/../partials/navbar.php';
               <td><?= htmlspecialchars($r['referral_code']) ?></td>
               <td><?= htmlspecialchars($r['patient_code']) ?></td>
               <td><?= htmlspecialchars($r['receiving_barangay']) ?></td>
-              <td><?= ucfirst($r['referral_status'] ?? 'pending') ?></td>
+              <td>
+                <?php if ($r['referral_status'] === 'received'): ?>
+                    <span class="badge bg-success">Received</span>
+                <?php else: ?>
+                    <span class="badge bg-warning text-dark">Pending</span>
+                <?php endif; ?>
+              </td>
               <td><?= htmlspecialchars($r['referral_date']) ?></td>
               <td>
                 <a class="btn btn-sm btn-primary" 
                    href="/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=<?= $r['referral_id'] ?>">View</a>
-                <a class="btn btn-sm btn-warning" 
-                   href="/WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=<?= $r['referral_id'] ?>">Edit</a>
+                <?php if ($r['referral_status'] !== 'received'): ?>
+                    <a class="btn btn-sm btn-warning" 
+                      href="/WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=<?= $r['referral_id'] ?>">Edit</a>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; else: ?>

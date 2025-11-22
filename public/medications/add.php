@@ -33,7 +33,7 @@ include __DIR__ . '/../partials/navbar.php';
 
       <div class="mb-3">
         <label class="form-label">Drugs Administered</label>
-        <select name="regimen" class="form-select" required>
+        <select name="drugs" class="form-select" required>
           <option value="">-- Select Drug --</option>
           <?php foreach ($drugs as $d): ?>
               <option value="<?=$d?>"><?=$d?></option>
@@ -58,6 +58,7 @@ include __DIR__ . '/../partials/navbar.php';
       </div>
 
       <button class="btn btn-success w-100">Save</button>
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list" class="btn btn-secondary mt-3">← Back</a>
     </form>
   </div>
 </div>

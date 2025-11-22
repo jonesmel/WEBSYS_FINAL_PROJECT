@@ -8,6 +8,7 @@ require_once __DIR__.'/../partials/navbar.php';
     <h3>Referral Details</h3>
     <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/print&id=<?= $ref['referral_id'] ?>" 
        class="btn btn-outline-primary" target="_blank">Print PDF</a>
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index" class="btn btn-secondary">← Back</a>
   </div>
 
   <div class="card shadow-sm p-4">
@@ -42,13 +43,31 @@ require_once __DIR__.'/../partials/navbar.php';
     <?php endif; ?>
 
     <div class="mt-4">
-      <?php if ($_SESSION['user']['role'] === 'super_admin' || $ref['created_by'] == $_SESSION['user']['user_id']): ?>
-        <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=<?= $ref['referral_id'] ?>" class="btn btn-warning">Edit</a>
+      <?php if (
+          ($ref['referral_status'] !== 'received') && 
+          (
+              $_SESSION['user']['role'] === 'super_admin' || 
+              $ref['created_by'] == $_SESSION['user']['user_id']
+          )
+      ): ?>
+          <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=<?= $ref['referral_id'] ?>" 
+            class="btn btn-warning">Edit</a>
       <?php endif; ?>
 
       <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
         <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/delete&id=<?= $ref['referral_id'] ?>"
            class="btn btn-danger" onclick="return confirm('Delete referral?');">Delete</a>
+      <?php endif; ?>
+
+      <?php if (
+          $_SESSION['user']['role'] === 'health_worker' &&
+          $ref['receiving_barangay'] === $_SESSION['user']['barangay_assigned'] &&
+          $ref['referral_status'] !== 'received'
+      ): ?>
+          <a class="btn btn-success"
+            href="/WEBSYS_FINAL_PROJECT/public/?route=referral/receive&id=<?= $ref['referral_id'] ?>">
+            Receive Referral
+          </a>
       <?php endif; ?>
     </div>
 

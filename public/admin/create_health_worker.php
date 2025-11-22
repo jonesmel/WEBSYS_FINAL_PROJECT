@@ -43,46 +43,50 @@ AuthMiddleware::requireRole(['super_admin']);
       </select>
       </div>
 
-      <button class="btn btn-primary w-100">Create Health Worker</button>
+      <button type="submit" class="btn btn-primary w-100">Create Health Worker</button>
     </form>
   </div>
 </div>
 
 <script>
-const emailField = document.querySelector("input[name='email']");
-const statusBox = document.getElementById("email-status");
-const submitBtn = document.querySelector("button[type='submit']");
+document.addEventListener("DOMContentLoaded", () => {
 
-submitBtn.disabled = true;
+    const emailField = document.querySelector("input[name='email']");
+    const statusBox = document.getElementById("email-status");
+    const submitBtn = document.querySelector("button[type='submit']");
 
-let typingTimeout = null;
+    submitBtn.disabled = true;
 
-emailField.addEventListener("input", function () {
-    clearTimeout(typingTimeout);
+    let typingTimeout = null;
 
-    const email = this.value.trim();
+    emailField.addEventListener("input", function () {
+        clearTimeout(typingTimeout);
 
-    if (email.length === 0) {
-        statusBox.innerHTML = "";
-        submitBtn.disabled = true;
-        return;
-    }
+        const email = this.value.trim();
 
-    // Wait 300ms after typing stops
-    typingTimeout = setTimeout(() => {
-        fetch(`/WEBSYS_FINAL_PROJECT/public/ajax/check_email.php?email=` + encodeURIComponent(email))
-            .then(res => res.json())
-            .then(data => {
-                if (data.valid) {
-                    statusBox.innerHTML = "<span class='text-success'>" + data.message + "</span>";
-                    submitBtn.disabled = false;
-                } else {
-                    statusBox.innerHTML = "<span class='text-danger'>" + data.message + "</span>";
-                    submitBtn.disabled = true;
-                }
-            });
-    }, 300);
+        if (email.length === 0) {
+            statusBox.innerHTML = "";
+            submitBtn.disabled = true;
+            return;
+        }
+
+        typingTimeout = setTimeout(() => {
+            fetch("/WEBSYS_FINAL_PROJECT/public/?route=ajax/check_email&email=" + encodeURIComponent(email))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.valid) {
+                        statusBox.innerHTML = "<span class='text-success'>" + data.message + "</span>";
+                        submitBtn.disabled = false;
+                    } else {
+                        statusBox.innerHTML = "<span class='text-danger'>" + data.message + "</span>";
+                        submitBtn.disabled = true;
+                    }
+                });
+        }, 300);
+    });
+
 });
 </script>
+
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

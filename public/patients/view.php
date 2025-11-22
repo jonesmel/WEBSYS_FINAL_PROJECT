@@ -120,7 +120,7 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
         <table class="table table-bordered">
           <thead>
             <tr>
-              <th>Regimen</th>
+              <th>Drugs</th>
               <th>Start</th>
               <th>End</th>
             </tr>
@@ -128,7 +128,7 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
           <tbody>
           <?php foreach ($meds as $m): ?>
             <tr>
-              <td><?=htmlspecialchars($m['regimen'])?></td>
+              <td><?=htmlspecialchars($m['drugs'])?></td>
               <td><?=$m['start_date']?></td>
               <td><?=$m['end_date']?></td>
             </tr>
