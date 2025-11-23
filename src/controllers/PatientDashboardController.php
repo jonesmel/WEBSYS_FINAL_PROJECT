@@ -18,6 +18,11 @@ class PatientDashboardController {
         include __DIR__ . '/../../public/patient/referrals.php';
     }
 
+    public function medications() {
+        AuthMiddleware::requireRole(['patient']);
+        include __DIR__ . '/../../public/patient/medications.php';
+    }
+
     public function profile() {
         AuthMiddleware::requireRole(['patient']);
         include __DIR__ . '/../../public/patient/profile.php';

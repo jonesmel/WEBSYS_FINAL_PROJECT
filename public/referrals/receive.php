@@ -16,8 +16,8 @@ require_once __DIR__.'/../partials/navbar.php';
 
     <div class="mb-3">
       <label class="form-label">Receiving Unit</label>
-      <input type="text" name="receiving_unit" class="form-control" 
-            value="<?= htmlspecialchars($_SESSION['user']['barangay_assigned']) ?>" readonly>
+      <input type="text" name="receiving_unit" class="form-control"
+            value="<?= htmlspecialchars($_SESSION['user']['barangay_assigned'] ?? '') ?>" readonly>
     </div>
 
     <div class="mb-3">
@@ -26,8 +26,8 @@ require_once __DIR__.'/../partials/navbar.php';
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Action Taken</label>
-      <textarea name="action_taken" class="form-control" rows="3"></textarea>
+      <label class="form-label">Action Taken (brief)</label>
+      <textarea name="action_taken" class="form-control" rows="3" placeholder="Action taken at receiving unit (copy to Form 7)"></textarea>
     </div>
 
     <div class="mb-3">

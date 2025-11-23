@@ -1,5 +1,6 @@
 <?php
 class AuthMiddleware {
+
   public static function requireLogin() {
     if (empty($_SESSION['user'])) {
       header('Location: /WEBSYS_FINAL_PROJECT/public/login.php');
@@ -13,8 +14,7 @@ class AuthMiddleware {
     $user = $_SESSION['user'];
 
     if (!in_array($user['role'], $roles)) {
-      http_response_code(403);
-      echo 'Access denied';
+      header("Location: /WEBSYS_FINAL_PROJECT/public/error.php?code=403&msg=Access+Denied");
       exit;
     }
   }
@@ -24,7 +24,7 @@ class AuthMiddleware {
     $u = $_SESSION['user'];
 
     if (!$u['is_verified']) {
-      echo 'Please verify your email first.';
+      header("Location: /WEBSYS_FINAL_PROJECT/public/error.php?code=403&msg=Please+verify+your+email+first");
       exit;
     }
 

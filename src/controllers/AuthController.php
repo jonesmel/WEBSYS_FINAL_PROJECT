@@ -3,15 +3,13 @@ require_once __DIR__ . '/../models/UserModel.php';
 require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../helpers/Flash.php';
 require_once __DIR__ . '/../helpers/EmailHelper.php';
+require_once __DIR__ . '/../models/NotificationModel.php';
 
 class AuthController {
 
     public function login() {
-
-        // Prevent visiting login while logged in
         if (!empty($_SESSION['user'])) {
             $role = $_SESSION['user']['role'];
-
             if ($role === 'super_admin') {
                 header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/dashboard");
             } elseif ($role === 'health_worker') {
@@ -23,7 +21,6 @@ class AuthController {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
             $email = trim($_POST['email'] ?? '');
             $password = trim($_POST['password'] ?? '');
 
@@ -37,17 +34,14 @@ class AuthController {
                     exit;
                 }
 
-                // force password change ONLY if required
                 if ($user['password_reset_required']) {
                     header("Location: /WEBSYS_FINAL_PROJECT/public/set_new_password.php?uid=".$user['user_id']);
                     exit;
                 }
 
-                // otherwise proceed normally
                 session_regenerate_id(true);
                 $_SESSION['user'] = $user;
 
-                // Redirect based on role
                 if ($user['role'] === 'super_admin') {
                     header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/dashboard");
                 } elseif ($user['role'] === 'health_worker') {
@@ -62,7 +56,7 @@ class AuthController {
             header("Location: /WEBSYS_FINAL_PROJECT/public/login.php");
             exit;
         }
-        
+
         include __DIR__ . '/../../public/login.php';
     }
 
@@ -89,8 +83,16 @@ class AuthController {
             exit;
         }
 
-        // Mark as verified but KEEP TOKEN
         UserModel::markEmailVerified($user['user_id']);
+
+        // Create notification for user that email verified (and do not send immediate email, it's redundant)
+        NotificationModel::create([
+            'user_id' => $user['user_id'],
+            'type' => 'account_verified',
+            'title' => 'Email Verified',
+            'message' => 'Your email has been verified. Please set your password to complete account setup.',
+            'link' => "/WEBSYS_FINAL_PROJECT/public/?route=auth/set_new_password"
+        ]);
 
         Flash::set('success', 'Email verified. Please set your new password.');
         header("Location: /WEBSYS_FINAL_PROJECT/public/set_new_password.php?uid=" . $user['user_id']);
@@ -110,11 +112,17 @@ class AuthController {
                 exit;
             }
 
-            // Update password
             UserModel::updatePassword($uid, password_hash($pass, PASSWORD_DEFAULT));
-
-            // FINAL TOKEN CLEAR HERE ONLY
             UserModel::clearVerificationToken($uid);
+
+            // Notify user (DB) that password created
+            NotificationModel::create([
+                'user_id' => $uid,
+                'type' => 'password_created',
+                'title' => 'Password Set',
+                'message' => 'Your password has been set successfully. You may now log in.',
+                'link' => "/WEBSYS_FINAL_PROJECT/public/?route=auth/login"
+            ]);
 
             Flash::set('success', 'Password created successfully. You may now log in.');
             header("Location: /WEBSYS_FINAL_PROJECT/public/login.php");
@@ -147,10 +155,19 @@ class AuthController {
             }
             else {
                 UserModel::updatePassword($uid, password_hash($new, PASSWORD_DEFAULT));
+
+                // Notification about password change
+                NotificationModel::create([
+                    'user_id' => $uid,
+                    'type' => 'password_changed',
+                    'title' => 'Password Changed',
+                    'message' => 'Your account password was changed successfully.',
+                    'link' => "/WEBSYS_FINAL_PROJECT/public/?route=auth/login"
+                ]);
+
                 Flash::set('success', 'Password updated successfully.');
             }
 
-            // Redirect based on role
             if ($user['role'] === 'patient') {
                 header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/profile");
             } elseif ($user['role'] === 'health_worker') {

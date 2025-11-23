@@ -42,6 +42,17 @@ pre {
   white-space: pre-wrap !important;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+}
+
+.action-buttons .btn {
+    flex-shrink: 0;
+}
+
 /* Mobile Bottom Nav */
 .mobile-bottom-nav {
   position: fixed !important;

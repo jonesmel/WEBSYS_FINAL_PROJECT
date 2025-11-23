@@ -35,6 +35,7 @@ $patient = $stmt->fetch();
   <div class="card shadow-sm p-4 mb-4">
     <h5 class="mb-3">Patient Information</h5>
     <p><strong>Patient Code:</strong> <?=htmlspecialchars($patient['patient_code'])?></p>
+    <p><strong>TB Case Number:</strong> <?=htmlspecialchars($patient['tb_case_number'])?></p>
     <p><strong>Barangay:</strong> <?=htmlspecialchars($patient['barangay'])?></p>
     <p><strong>Contact Number:</strong> <?=htmlspecialchars($patient['contact_number'])?></p>
   </div>
