@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__.'/../partials/header.php';
-require_once __DIR__.'/../partials/navbar.php';
 require_once __DIR__.'/../../src/middleware/AuthMiddleware.php';
 require_once __DIR__.'/../../src/models/PatientModel.php';
 require_once __DIR__.'/../../src/models/UserModel.php';
@@ -9,9 +7,13 @@ require_once __DIR__.'/../../src/helpers/Flash.php';
 
 AuthMiddleware::requireRole(['super_admin']);
 
+$pdo = getDB();
+
+// Fetch early
 $patients = PatientModel::getAllWithoutUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $patient_id = $_POST['patient_id'] ?? null;
     $email = trim($_POST['email'] ?? '');
 
@@ -33,14 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $uid = UserModel::createPatientUser($email, $tempPass, $token);
 
-        $pdo = getDB();
         $stmt = $pdo->prepare("UPDATE patients SET user_id=? WHERE patient_id=?");
         $stmt->execute([$uid, $patient_id]);
 
         EmailHelper::sendVerificationEmail($email, $token);
 
         Flash::set('success', 'Patient user created. Verification email sent.');
-
     } catch (Exception $e) {
         Flash::set('danger', 'Error: '.$e->getMessage());
     }
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$pdo = getDB();
+// Fetch users AFTER logic
 $patientUsers = $pdo->query("
     SELECT u.*, p.patient_code
     FROM users u
@@ -57,6 +57,9 @@ $patientUsers = $pdo->query("
     WHERE u.role = 'patient'
     ORDER BY u.created_at DESC
 ")->fetchAll();
+
+require_once __DIR__.'/../partials/header.php';
+require_once __DIR__.'/../partials/navbar.php';
 ?>
 
 <div class="container py-4">
@@ -69,7 +72,6 @@ $patientUsers = $pdo->query("
       </div>
   <?php endif; ?>
 
-  <!-- Create Patient User -->
   <div class="card shadow-sm p-4 mb-4">
     <h5 class="mb-3">Create User Account for Patient</h5>
 
@@ -100,7 +102,6 @@ $patientUsers = $pdo->query("
     </form>
   </div>
 
-  <!-- PATIENT USER TABLE -->
   <div class="card shadow-sm p-4 mb-4">
     <h5>Existing Patient User Accounts</h5>
 
