@@ -2,11 +2,24 @@
 require_once __DIR__.'/../partials/header.php';
 require_once __DIR__.'/../partials/navbar.php';
 require_once __DIR__.'/../../src/middleware/AuthMiddleware.php';
+require_once __DIR__.'/../../src/models/ReferralModel.php';
+
 AuthMiddleware::requireRole(['super_admin','health_worker']);
+
+$isAdmin = $_SESSION['user']['role'] === 'super_admin';
+
+// Check if patient has pending outgoing or incoming referrals
+$hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
 ?>
 
 <div class="container py-4" style="max-width:700px;">
   <h3 class="mb-4">Edit Patient</h3>
+
+  <?php if ($hasPendingRef): ?>
+    <div class="alert alert-warning">
+      <strong>Warning:</strong> This patient has pending referrals. Barangay cannot be edited.
+    </div>
+  <?php endif; ?>
 
   <div class="card shadow-sm p-4">
     <form method="POST" action="/WEBSYS_FINAL_PROJECT/public/?route=patient/edit&id=<?= $patient['patient_id'] ?>">
@@ -21,6 +34,7 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
           <label class="form-label">Age</label>
           <input type="number" name="age" class="form-control" value="<?= htmlspecialchars($patient['age']) ?>">
         </div>
+
         <div class="col-md-4 mb-3">
           <label class="form-label">Sex</label>
           <select name="sex" class="form-select">
@@ -29,9 +43,38 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
             <option value="F" <?= $patient['sex'] === 'F' ? 'selected' : '' ?>>F</option>
           </select>
         </div>
+
         <div class="col-md-4 mb-3">
           <label class="form-label">Barangay</label>
-          <input type="text" name="barangay" class="form-control" value="<?= htmlspecialchars($patient['barangay']) ?>">
+
+          <?php if ($isAdmin && !$hasPendingRef): ?>
+              <!-- Editable dropdown for super admin, only if no pending referrals -->
+              <select name="barangay" class="form-select" required>
+                <?php
+                  $barangays = [
+                    'Ambiong', 'Loakan Proper', 'Pacdal', 'BGH Compound',
+                    'Bakakeng Central', 'Camp 7'
+                  ];
+                  foreach ($barangays as $b):
+                ?>
+                  <option value="<?=$b?>" <?= $patient['barangay'] === $b ? 'selected' : '' ?>>
+                    <?=$b?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+
+          <?php else: ?>
+              <!-- Locked for health worker or if pending referrals exist -->
+              <input 
+                type="text" 
+                class="form-control" 
+                value="<?= htmlspecialchars($patient['barangay']) ?>" 
+                readonly
+              >
+
+              <!-- Still submit hidden value to avoid losing data -->
+              <input type="hidden" name="barangay" value="<?= htmlspecialchars($patient['barangay']) ?>">
+          <?php endif; ?>
         </div>
       </div>
 
@@ -42,7 +85,12 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
 
       <div class="mb-3">
         <label class="form-label">TB Case Number</label>
-        <input type="text" name="tb_case_number" class="form-control" value="<?= htmlspecialchars($patient['tb_case_number']) ?>">
+
+        <!-- Visible but not editable -->
+        <input type="text" class="form-control" value="<?= htmlspecialchars($patient['tb_case_number']) ?>" disabled>
+
+        <!-- Hidden so the original value is still submitted -->
+        <input type="hidden" name="tb_case_number" value="<?= htmlspecialchars($patient['tb_case_number']) ?>">
       </div>
 
       <div class="row">

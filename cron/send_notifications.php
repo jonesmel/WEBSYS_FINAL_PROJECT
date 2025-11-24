@@ -1,64 +1,64 @@
 <?php
-
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/helpers/EmailHelper.php';
+require_once __DIR__ . '/../src/models/NotificationModel.php';
 require_once __DIR__ . '/../src/models/LogModel.php';
 
 $pdo = getDB();
 
-// Get notifications that need to be sent
-$sql = "SELECT * FROM notifications WHERE is_sent = 0 AND scheduled_at <= NOW()";
+// Get notifications scheduled <= now and not sent
+$sql = "SELECT notification_id 
+        FROM notifications 
+        WHERE is_sent = 0 
+        AND scheduled_at IS NOT NULL 
+        AND scheduled_at <= NOW()";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $due = $stmt->fetchAll();
 
-foreach ($due as $n) {
-    // Fetch patient email
-    $q = $pdo->prepare("SELECT u.email, u.user_id
-                        FROM patients p
-                        JOIN users u ON u.user_id = p.user_id
-                        WHERE p.patient_id = ?");
-    $q->execute([$n['patient_id']]);
-    $usr = $q->fetch();
+foreach ($due as $row) {
 
-    $sent = false;
+    $nid = $row['notification_id'];
 
-    if ($usr && !empty($usr['email'])) {
-        try {
-            EmailHelper::sendReminder($usr['email'], $n['title'], $n['message']);
-            $sent = true;
-        } catch (Exception $e) {
-            error_log("[CRON] Email send failed: " . $e->getMessage());
-            $sent = false;
-        }
-    }
+    // Attempt to send via NotificationModel (checks verified status)
+    $sent = NotificationModel::sendNow($nid);
 
-    if ($sent) {
-        // Mark notification as sent
-        $upd = $pdo->prepare("UPDATE notifications SET is_sent = 1, sent_at = NOW() WHERE notification_id = ?");
-        $upd->execute([$n['notification_id']]);
+    if (!$sent) {
 
-        // Log event
+        // Fetch for context
+        $q = $pdo->prepare("SELECT * FROM notifications WHERE notification_id = ?");
+        $q->execute([$nid]);
+        $n = $q->fetch();
+
+        $msg = "Scheduled notification {$nid} (type: {$n['type']}) "
+             . "for patient {$n['patient_id']} could NOT be sent. "
+             . "Recipient has no verified email.";
+
+        // Create staff follow-up entry
+        $insert = $pdo->prepare("
+            INSERT INTO notifications
+                (user_id, patient_id, type, title, message, link, is_read, created_at)
+            VALUES (NULL, ?, 'staff_follow_up', 'Notification Failed', ?, NULL, 0, NOW())
+        ");
+
+        $insert->execute([
+            $n['patient_id'],
+            $msg
+        ]);
+
+    } else {
+        // Log successful send
         LogModel::insertLog(
-            $usr['user_id'] ?? null,
+            null,
             'notification_sent',
             'notifications',
-            $n['notification_id'],
+            $nid,
             null,
             json_encode(['sent' => true]),
             'CRON',
             'system'
         );
-    } else {
-        // If email unavailable, mark for staff follow-up
-        $fallback = $pdo->prepare("INSERT INTO notifications (patient_id, notification_type, title, message, scheduled_at, is_sent)
-                                   VALUES (?, 'staff_follow_up', ?, ?, NOW(), 0)");
-        $fallback->execute([
-            $n['patient_id'],
-            'Patient unreachable',
-            'Patient has no email. Manual follow-up required.'
-        ]);
     }
 }
-?>

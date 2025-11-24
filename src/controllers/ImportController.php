@@ -17,13 +17,17 @@ class ImportController {
             $file = $_FILES['csv_file'];
 
             if ($file['error'] !== UPLOAD_ERR_OK) {
-                Flash::set('danger','Upload error');
+                Flash::set('danger', 'Upload error');
                 header("Location: /WEBSYS_FINAL_PROJECT/public/?route=import/upload");
                 exit;
             }
 
             $handle = fopen($file['tmp_name'], 'r');
-            if (!$handle) { Flash::set('danger','Could not read file'); header("Location: /WEBSYS_FINAL_PROJECT/public/?route=import/upload"); exit; }
+            if (!$handle) {
+                Flash::set('danger', 'Could not read file');
+                header("Location: /WEBSYS_FINAL_PROJECT/public/?route=import/upload");
+                exit;
+            }
 
             $header = fgetcsv($handle);
             $rowsImported = 0;
@@ -45,19 +49,36 @@ class ImportController {
                 }
 
                 $userId = null;
-
                 if (!empty($data['email'])) {
-                    try {
-                        $tempPass = bin2hex(random_bytes(5));
+                    $existing = UserModel::getByEmail($data['email']);
+
+                    if ($existing) {
+                        // If the user exists — do not auto-verify. Reset token and force verification
                         $token = bin2hex(random_bytes(16));
-                        $userId = UserModel::createPatientUser($data['email'], $tempPass, $token);
-                        EmailHelper::sendVerificationEmail($data['email'], $token);
-                    } catch (PDOException $e) {
-                        // duplicate email -> skip and record error
-                        $errors[] = "Email error on row {$rowsImported}: " . $e->getMessage();
-                        $skipped++;
-                        continue;
+                        $pdo = getDB();
+                        $stmt = $pdo->prepare("UPDATE users SET is_verified = 0, verification_token = ?, password_reset_required = 1 WHERE user_id = ?");
+                        $stmt->execute([$token, $existing['user_id']]);
+                        EmailHelper::sendVerificationEmail($existing['email'], $token);
+                        $userId = $existing['user_id'];
+                    } else {
+                        // Create new patient user (unverified)
+                        try {
+                            $tempPass = bin2hex(random_bytes(5));
+                            $token = bin2hex(random_bytes(16));
+                            $userId = UserModel::createPatientUser($data['email'], $tempPass, $token);
+                            EmailHelper::sendVerificationEmail($data['email'], $token);
+                        } catch (PDOException $e) {
+                            $errors[] = "Email error on row: " . $e->getMessage();
+                            $skipped++;
+                            continue;
+                        }
                     }
+                }
+
+                if (!is_numeric($userId)) $userId = null;
+
+                if (empty($data['tb_case_number'])) {
+                    $data['tb_case_number'] = PatientModel::generateTbCaseNumber();
                 }
 
                 PatientModel::createFromImport($data, $userId);
@@ -77,13 +98,13 @@ class ImportController {
                 json_encode([
                     'file' => $file['name'],
                     'inserted' => $rowsImported,
-                    'skipped' => $skipped
+                    'skipped' => $skipped,
+                    'errors' => $errors
                 ]),
                 $_SERVER['REMOTE_ADDR'],
                 $_SERVER['HTTP_USER_AGENT']
             );
 
-            // variables used by the view
             $f = $file;
             $rows = $rowsImported;
             $inserted = $rowsImported;

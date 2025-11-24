@@ -8,12 +8,7 @@ AuthMiddleware::requireRole(['patient']);
 VerifyEmailMiddleware::enforce();
 
 $uid = $_SESSION['user']['user_id'];
-$pdo = getDB();
-$stmt = $pdo->prepare("SELECT patient_id FROM patients WHERE user_id=?");
-$stmt->execute([$uid]);
-$pid = $stmt->fetchColumn();
-
-$rows = NotificationModel::getAllForPatient($pid);
+$rows = NotificationModel::getByUser($uid);
 ?>
 
 <div class="container py-4">
@@ -26,7 +21,7 @@ $rows = NotificationModel::getAllForPatient($pid);
           <tr>
             <th>Title</th>
             <th>Message</th>
-            <th>Scheduled</th>
+            <th>Date</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -34,9 +29,11 @@ $rows = NotificationModel::getAllForPatient($pid);
         <?php if ($rows): foreach ($rows as $n): ?>
           <tr>
             <td><?=htmlspecialchars($n['title'])?></td>
-            <td><?=htmlspecialchars($n['message'])?></td>
-            <td><?=$n['scheduled_at']?></td>
-            <td><?=$n['is_sent'] ? '<span class="badge bg-success">Sent</span>' : '<span class="badge bg-warning text-dark">Pending</span>'?></td>
+            <td><?=nl2br(htmlspecialchars($n['message']))?></td>
+            <td><?=htmlspecialchars($n['created_at'])?></td>
+            <td>
+              <?= $n['is_read'] ? '<span class="badge bg-success">Read</span>' : '<span class="badge bg-warning text-dark">Unread</span>' ?>
+            </td>
           </tr>
         <?php endforeach; else: ?>
           <tr><td colspan="4" class="text-center">No notifications found.</td></tr>

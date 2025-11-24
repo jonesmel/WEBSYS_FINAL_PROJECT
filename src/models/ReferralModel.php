@@ -91,13 +91,15 @@ class ReferralModel {
   }
 
   public static function getIncomingForBarangay($barangay) {
-    $stmt = getDB()->prepare('
-      SELECT r.*, p.patient_code
-      FROM referrals r
-      LEFT JOIN patients p ON p.patient_id=r.patient_id
-      WHERE r.receiving_barangay = ?
-      ORDER BY r.created_at DESC
-    ');
+    $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT r.*, p.patient_code
+        FROM referrals r
+        JOIN patients p ON p.patient_id = r.patient_id
+        WHERE r.receiving_barangay = ?
+          AND r.referral_status = 'pending'
+        ORDER BY r.referral_date DESC
+    ");
     $stmt->execute([$barangay]);
     return $stmt->fetchAll();
   }
@@ -159,13 +161,25 @@ class ReferralModel {
     $stmt = $pdo->prepare("
         SELECT r.*, p.patient_code
         FROM referrals r
-        LEFT JOIN patients p ON p.patient_id=r.patient_id
-        WHERE r.receiving_barangay = ? 
-        AND r.referral_status = 'received'
+        JOIN patients p ON p.patient_id = r.patient_id
+        WHERE r.receiving_barangay = ?
+          AND r.referral_status = 'received'
         ORDER BY r.date_received DESC
     ");
     $stmt->execute([$barangay]);
     return $stmt->fetchAll();
+  }
+
+  public static function patientHasPending($patient_id) {
+    $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as c
+        FROM referrals
+        WHERE patient_id = ?
+        AND referral_status = 'pending'
+    ");
+    $stmt->execute([$patient_id]);
+    return $stmt->fetch()['c'] > 0;
   }
 }
 ?>

@@ -16,7 +16,7 @@ $sent = count(ReferralModel::getSentByBarangay($barangay));
 $incoming = count(ReferralModel::getIncomingForBarangay($barangay));
 $received = count(ReferralModel::getReceivedByBarangay($barangay));
 
-$notifs = NotificationModel::getByBarangay($user['barangay_assigned']);
+$notifs = NotificationModel::getByUser($_SESSION['user']['user_id']);
 $pending = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
 ?>
 

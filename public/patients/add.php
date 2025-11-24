@@ -47,11 +47,6 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
         <input type="text" name="contact_number" class="form-control">
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">TB Case Number</label>
-        <input type="text" name="tb_case_number" class="form-control">
-      </div>
-
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Bacteriological Status</label>

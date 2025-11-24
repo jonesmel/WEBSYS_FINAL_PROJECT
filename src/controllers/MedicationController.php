@@ -5,6 +5,7 @@ require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../models/PatientModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Flash.php';
+require_once __DIR__ . '/../models/UserModel.php';
 
 class MedicationController {
 
@@ -21,18 +22,61 @@ class MedicationController {
             $data = $_POST;
             $data['created_by'] = $_SESSION['user']['user_id'];
 
+            // Create medication record
             $id = MedicationModel::create($data);
 
-            // Schedule reminder
-            if (!empty($data['start_date'])) {
-                $sched = date('Y-m-d H:i:s', strtotime($data['start_date'] . ' -1 day'));
+            $patient_id = intval($data['patient_id']);
+            $start_date = $data['start_date'] ?? null;
 
+            // 1) Create DB notification for patient (immediate) and attempt immediate email (will be sent only if verified)
+            NotificationModel::createForPatientUser(
+                $patient_id,
+                'medication_created',
+                'New Medication Added',
+                'A new medication schedule has been added to your record. Please check your medications list.',
+                "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications"
+            );
+
+            // 2) Notify health workers assigned to patient's barangay (DB + immediate email if verified)
+            $pdo = getDB();
+            $stmt = $pdo->prepare("SELECT barangay FROM patients WHERE patient_id = ?");
+            $stmt->execute([$patient_id]);
+            $barangay = $stmt->fetchColumn();
+
+            if ($barangay) {
+                $workers = UserModel::getHealthWorkersByBarangay($barangay);
+                foreach ($workers as $hw) {
+                    NotificationModel::create([
+                        'user_id' => $hw['user_id'],
+                        'patient_id' => $patient_id,
+                        'type' => 'medication_created_hw',
+                        'title' => 'Medication Added',
+                        'message' => 'A medication schedule was added for a patient in your barangay.',
+                        'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=" . $patient_id
+                    ]);
+                }
+            }
+
+            // 3) Schedule reminders for patient (1 day before + same day) — stored as scheduled notifications
+            if (!empty($start_date)) {
+                $one_day_before = date('Y-m-d 09:00:00', strtotime($start_date . ' -1 day'));
                 NotificationModel::create([
-                    'patient_id'        => $data['patient_id'],
-                    'notification_type' => 'patient_reminder',
-                    'title'             => 'Medication Reminder',
-                    'message'           => 'Your medication will start on ' . $data['start_date'],
-                    'scheduled_at'      => $sched
+                    'patient_id' => $patient_id,
+                    'type' => 'medication_pre_reminder',
+                    'title' => 'Medication Reminder',
+                    'message' => "Your medication begins tomorrow ({$start_date}).",
+                    'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
+                    'scheduled_at' => $one_day_before
+                ]);
+
+                $same_day = date('Y-m-d 08:00:00', strtotime($start_date));
+                NotificationModel::create([
+                    'patient_id' => $patient_id,
+                    'type' => 'medication_today',
+                    'title' => 'Medication Starts Today',
+                    'message' => "Your medication begins today ({$start_date}).",
+                    'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
+                    'scheduled_at' => $same_day
                 ]);
             }
 
@@ -54,24 +98,18 @@ class MedicationController {
 
         include __DIR__ . '/../../public/medications/add.php';
     }
-    
+
     public function my_medications() {
         AuthMiddleware::requireRole(['patient']);
 
         $uid = $_SESSION['user']['user_id'];
 
-        // Get patient's patient_id
         $pdo = getDB();
         $stmt = $pdo->prepare("SELECT patient_id FROM patients WHERE user_id = ?");
         $stmt->execute([$uid]);
         $pid = $stmt->fetchColumn();
 
-        if (!$pid) {
-            $rows = [];
-        } else {
-            require_once __DIR__ . '/../models/MedicationModel.php';
-            $rows = MedicationModel::getByPatient($pid);
-        }
+        $rows = $pid ? MedicationModel::getByPatient($pid) : [];
 
         include __DIR__ . '/../../public/patient/medications.php';
     }
@@ -79,7 +117,7 @@ class MedicationController {
     public function edit() {
         AuthMiddleware::requireRole(['super_admin','health_worker']);
         $id = $_GET['id'] ?? null;
-        if (!$id) { Flash::set('danger','Missing ID'); header("Location: /?route=medication/list"); exit; }
+        if (!$id) { Flash::set('danger','Missing ID'); header("Location: /WEBSYS_FINAL_PROJECT/public/?route=medication/list"); exit; }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             MedicationModel::update($id, $_POST);
@@ -98,9 +136,11 @@ class MedicationController {
         AuthMiddleware::requireRole(['super_admin']);
         $id = $_GET['id'] ?? null;
         MedicationModel::delete($id);
+
         LogModel::insertLog($_SESSION['user']['user_id'],'delete','medications',$id,null,null,$_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '');
+
         Flash::set('success','Medication deleted.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=medication/list");
+        header('Location: /WEBSYS_FINAL_PROJECT/public/?route=medication/list');
         exit;
     }
 }

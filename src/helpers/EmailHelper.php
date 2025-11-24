@@ -22,7 +22,6 @@ class EmailHelper {
       $mail->isHTML(true);
       $mail->CharSet = 'UTF-8';
     } catch (Exception $e) {
-      // If mailer fails to construct, throw so callers can log
       throw $e;
     }
     return $mail;
@@ -71,7 +70,6 @@ class EmailHelper {
       $mail->send();
       return true;
     } catch (Exception $e) {
-      // Bubble up so caller can log or save to audit logs
       error_log("EmailHelper::sendVerificationEmail error: " . $e->getMessage());
       return false;
     }
