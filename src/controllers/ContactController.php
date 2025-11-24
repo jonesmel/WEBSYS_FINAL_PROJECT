@@ -4,6 +4,7 @@ require_once __DIR__ . '/../models/PatientModel.php';
 require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Flash.php';
+require_once __DIR__ . '/../helpers/BarangayHelper.php';
 
 class ContactController {
     public function list() {
@@ -11,12 +12,16 @@ class ContactController {
 
         $user = $_SESSION['user'];
 
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+
         if ($user['role'] === 'health_worker') {
-            $rows = ContactModel::getByBarangay($user['barangay_assigned']);
+            $rows = ContactModel::getByBarangayFiltered($user['barangay_assigned'], $q);
         } else {
-            $rows = ContactModel::getAll();
+            $rows = ContactModel::getAllFiltered($q, $barangay);
         }
 
+        $barangays = BarangayHelper::getAll();
         include __DIR__ . '/../../public/contacts/list.php';
     }
 
@@ -52,6 +57,8 @@ class ContactController {
         } else {
             $patients = PatientModel::getAll();
         }
+
+        $barangays = BarangayHelper::getAll();
         include __DIR__ . '/../../public/contacts/add.php';
     }
 

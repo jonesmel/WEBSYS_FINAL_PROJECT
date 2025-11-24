@@ -3,6 +3,7 @@ require_once __DIR__ . '/../models/PatientModel.php';
 require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Flash.php';
+require_once __DIR__ . '/../helpers/BarangayHelper.php';
 
 class PatientController {
 
@@ -10,11 +11,19 @@ class PatientController {
         AuthMiddleware::requireLogin();
         $user = $_SESSION['user'];
 
+        // Backend filtering: ?q=search&barangay=name
+        $q = trim($_GET['q'] ?? '');
+        $barangayFilter = trim($_GET['barangay'] ?? '');
+
         if ($user['role'] === 'health_worker') {
-            $patients = PatientModel::getAllByBarangay($user['barangay_assigned']);
+            // health_worker normally sees only own barangay; still allow q filter
+            $patients = PatientModel::getAllByBarangayFiltered($user['barangay_assigned'], $q);
         } else {
-            $patients = PatientModel::getAll();
+            // super_admin sees all, optionally filtered
+            $patients = PatientModel::getAllFiltered($q, $barangayFilter);
         }
+
+        $barangays = BarangayHelper::getAll();
 
         include __DIR__ . '/../../public/patients/list.php';
     }
@@ -29,11 +38,6 @@ class PatientController {
                 $data['barangay'] = $user['barangay_assigned'];
             }
 
-            if (empty($data['patient_code'])) {
-                $data['patient_code'] = PatientModel::generatePatientCode();
-            }
-            
-            // Auto generate patient code if missing
             if (empty($data['patient_code'])) {
                 $data['patient_code'] = PatientModel::generatePatientCode();
             }
@@ -58,6 +62,7 @@ class PatientController {
             exit;
         }
 
+        $barangays = BarangayHelper::getAll();
         include __DIR__ . '/../../public/patients/add.php';
     }
 
@@ -91,6 +96,7 @@ class PatientController {
             exit;
         }
 
+        $barangays = BarangayHelper::getAll();
         include __DIR__ . '/../../public/patients/edit.php';
     }
 
@@ -125,7 +131,7 @@ class PatientController {
         );
 
         Flash::set('success','Patient deleted.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/index");
+        header('Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/index');
         exit;
     }
 }

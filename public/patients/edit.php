@@ -10,6 +10,8 @@ $isAdmin = $_SESSION['user']['role'] === 'super_admin';
 
 // Check if patient has pending outgoing or incoming referrals
 $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
+
+$barangays = BarangayHelper::getAll();
 ?>
 
 <div class="container py-4" style="max-width:700px;">
@@ -51,10 +53,6 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
               <!-- Editable dropdown for super admin, only if no pending referrals -->
               <select name="barangay" class="form-select" required>
                 <?php
-                  $barangays = [
-                    'Ambiong', 'Loakan Proper', 'Pacdal', 'BGH Compound',
-                    'Bakakeng Central', 'Camp 7'
-                  ];
                   foreach ($barangays as $b):
                 ?>
                   <option value="<?=$b?>" <?= $patient['barangay'] === $b ? 'selected' : '' ?>>

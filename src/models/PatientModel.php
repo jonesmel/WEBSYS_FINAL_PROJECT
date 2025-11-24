@@ -4,13 +4,8 @@ require_once __DIR__ . '/../../config/db.php';
 class PatientModel {
   public static function create($data) {
     $pdo = getDB();
+    $userId = (!empty($data['user_id']) && is_numeric($data['user_id'])) ? $data['user_id'] : null;
 
-    // Ensure invalid user_id values don't break FK
-    $userId = (!empty($data['user_id']) && is_numeric($data['user_id']))
-              ? $data['user_id']
-              : null;
-
-    // Auto-generate TB Case Number only if EMPTY
     if (empty($data['tb_case_number'])) {
         $data['tb_case_number'] = self::generateTbCaseNumber();
     }
@@ -43,7 +38,6 @@ class PatientModel {
   }
 
   public static function createFromImport($data, $uid = null) {
-    // Convert false/empty/invalid uid → null
     $data['user_id'] = (!empty($uid) && is_numeric($uid)) ? $uid : null;
     return self::create($data);
   }
@@ -57,6 +51,28 @@ class PatientModel {
 
   public static function getAll() {
     return getDB()->query("SELECT * FROM patients ORDER BY created_at DESC")->fetchAll();
+  }
+
+  public static function getAllFiltered($q = '', $barangay = '') {
+    $pdo = getDB();
+    $sql = "SELECT * FROM patients WHERE 1=1 ";
+    $params = [];
+
+    if (!empty($q)) {
+        $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ?) ";
+        $like = '%' . $q . '%';
+        $params[] = $like;
+        $params[] = $like;
+    }
+    if (!empty($barangay)) {
+        $sql .= "AND barangay = ? ";
+        $params[] = $barangay;
+    }
+
+    $sql .= "ORDER BY created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
   }
 
   public static function getAllWithoutUser() {
@@ -75,6 +91,25 @@ class PatientModel {
     $pdo = getDB();
     $stmt = $pdo->prepare("SELECT * FROM patients WHERE barangay=? ORDER BY created_at DESC");
     $stmt->execute([$b]);
+    return $stmt->fetchAll();
+  }
+
+  public static function getAllByBarangayFiltered($b, $q = '') {
+    if (empty($b)) return [];
+    $pdo = getDB();
+    $sql = "SELECT * FROM patients WHERE barangay = ? ";
+    $params = [$b];
+
+    if (!empty($q)) {
+      $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ?) ";
+      $like = '%' . $q . '%';
+      $params[] = $like;
+      $params[] = $like;
+    }
+
+    $sql .= "ORDER BY created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     return $stmt->fetchAll();
   }
 
@@ -146,4 +181,3 @@ class PatientModel {
     return $stmt->execute([$id]);
   }
 }
-?>
