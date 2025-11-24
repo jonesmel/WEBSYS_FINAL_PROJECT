@@ -6,10 +6,39 @@ require_once __DIR__.'/../partials/navbar.php';
 <div class="container py-4">
   <h3 class="mb-4">All Referrals</h3>
 
-  <div class="mb-3">
-    <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/create" class="btn btn-success">
-      + Create New Referral
-    </a>
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <div>
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/create" class="btn btn-success">
+        + Create New Referral
+      </a>
+    </div>
+
+    <form class="row g-2" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
+      <input type="hidden" name="route" value="referral/index">
+      <div class="col-auto">
+        <input name="q" class="form-control" placeholder="Search code / patient" value="<?=htmlspecialchars($_GET['q'] ?? '')?>">
+      </div>
+      <div class="col-auto">
+        <?php
+          require_once __DIR__ . '/../../src/helpers/BarangayHelper.php';
+          $barangays = BarangayHelper::getAll();
+        ?>
+        <select name="receiving_barangay" class="form-select">
+          <option value="">-- Receiving Barangay --</option>
+          <?php foreach ($barangays as $b): ?>
+            <option value="<?=htmlspecialchars($b)?>" <?= (isset($_GET['receiving_barangay']) && $_GET['receiving_barangay']===$b) ? 'selected' : '' ?>><?=htmlspecialchars($b)?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-auto">
+        <select name="status" class="form-select">
+          <option value="">-- Status --</option>
+          <option value="pending" <?= (($_GET['status'] ?? '') === 'pending') ? 'selected' : '' ?>>Pending</option>
+          <option value="received" <?= (($_GET['status'] ?? '') === 'received') ? 'selected' : '' ?>>Received</option>
+        </select>
+      </div>
+      <div class="col-auto"><button class="btn btn-primary">Filter</button></div>
+    </form>
   </div>
 
   <div class="card shadow-sm p-3">

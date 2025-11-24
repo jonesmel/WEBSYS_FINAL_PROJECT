@@ -6,61 +6,61 @@ require_once __DIR__.'/../../src/models/PatientModel.php';
 require_once __DIR__.'/../../src/models/UserModel.php';
 require_once __DIR__.'/../../src/helpers/EmailHelper.php';
 require_once __DIR__.'/../../src/helpers/Flash.php';
+require_once __DIR__.'/../../src/helpers/BarangayHelper.php';
 
 AuthMiddleware::requireRole(['super_admin']);
 
 $patients = PatientModel::getAllWithoutUser();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $patient_id = $_POST['patient_id'] ?? null;
-    $email = trim($_POST['email'] ?? '');
-
-    if (!$patient_id || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        Flash::set('danger', 'Invalid input. Select a patient and enter a valid email.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/users");
-        exit;
-    }
-
-    if (UserModel::emailExists($email)) {
-        Flash::set('danger', 'Email already registered.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/users");
-        exit;
-    }
-
-    try {
-        $token = bin2hex(random_bytes(16));
-        $tempPass = bin2hex(random_bytes(6));
-
-        $uid = UserModel::createPatientUser($email, $tempPass, $token);
-
-        $pdo = getDB();
-        $stmt = $pdo->prepare("UPDATE patients SET user_id=? WHERE patient_id=?");
-        $stmt->execute([$uid, $patient_id]);
-
-        EmailHelper::sendVerificationEmail($email, $token);
-
-        Flash::set('success', 'Patient user created. Verification email sent.');
-
-    } catch (Exception $e) {
-        Flash::set('danger', 'Error: '.$e->getMessage());
-    }
-
-    header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/users");
-    exit;
-}
-
 $pdo = getDB();
-$patientUsers = $pdo->query("
-    SELECT u.*, p.patient_code
+
+// Filters
+$q = trim($_GET['q'] ?? '');
+$barangay = trim($_GET['barangay'] ?? '');
+
+// patientUsers query with backend filtering
+$sql = "
+    SELECT u.*, p.patient_code, p.barangay AS patient_barangay
     FROM users u
     JOIN patients p ON p.user_id = u.user_id
     WHERE u.role = 'patient'
-    ORDER BY u.created_at DESC
-")->fetchAll();
+";
+$params = [];
+if (!empty($q)) {
+    $sql .= " AND (u.email LIKE ? OR p.patient_code LIKE ?)";
+    $like = '%' . $q . '%';
+    $params[] = $like; $params[] = $like;
+}
+if (!empty($barangay)) {
+    $sql .= " AND p.barangay = ?";
+    $params[] = $barangay;
+}
+$sql .= " ORDER BY u.created_at DESC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$patientUsers = $stmt->fetchAll();
+
+$barangays = BarangayHelper::getAll();
 ?>
 
 <div class="container py-4">
   <h3 class="mb-4">Patient User Management</h3>
+
+  <!-- Filter form -->
+  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
+    <input type="hidden" name="route" value="admin/users">
+    <div class="col-md-4"><input name="q" value="<?=htmlspecialchars($q)?>" class="form-control" placeholder="Search email or patient code"></div>
+    <div class="col-md-3">
+      <select name="barangay" class="form-select">
+        <option value="">-- Barangay --</option>
+        <?php foreach ($barangays as $b): ?>
+          <option value="<?=htmlspecialchars($b)?>" <?= $b === $barangay ? 'selected' : '' ?>><?=htmlspecialchars($b)?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary">Filter</button></div>
+    <div class="col-md-3 text-end"><a href="/WEBSYS_FINAL_PROJECT/public/?route=admin/users" class="btn btn-secondary">Reset</a></div>
+  </form>
 
   <?php if (!empty($_SESSION['flash_message'])): ?>
       <div class="alert alert-<?=htmlspecialchars($_SESSION['flash_message_type'] ?? 'info')?> alert-dismissible fade show">
@@ -111,6 +111,7 @@ $patientUsers = $pdo->query("
             <th>Email</th>
             <th>Verified?</th>
             <th>Assigned Patient Code</th>
+            <th>Patient Barangay</th>
             <th width="90"></th>
           </tr>
         </thead>
@@ -122,6 +123,7 @@ $patientUsers = $pdo->query("
                 ? '<span class="badge bg-success">Yes</span>'
                 : '<span class="badge bg-warning text-dark">No</span>' ?></td>
             <td><?=htmlspecialchars($u['patient_code'])?></td>
+            <td><?=htmlspecialchars($u['patient_barangay'])?></td>
             <td>
               <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/delete_user&id=<?=$u['user_id']?>"
                 onclick="return confirm('Delete this user?');"
@@ -141,17 +143,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailField = document.querySelector("input[name='email']");
     const statusBox = document.getElementById("email-status");
     const submitBtn = document.querySelector("button[type='submit']");
-    submitBtn.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
 
     let typingTimeout = null;
 
-    emailField.addEventListener("input", function () {
+    emailField?.addEventListener("input", function () {
         clearTimeout(typingTimeout);
         const email = this.value.trim();
 
         if (email.length === 0) {
             statusBox.innerHTML = "";
-            submitBtn.disabled = true;
+            if (submitBtn) submitBtn.disabled = true;
             return;
         }
 
@@ -161,10 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     if (data.valid) {
                         statusBox.innerHTML = "<span class='text-success'>" + data.message + "</span>";
-                        submitBtn.disabled = false;
+                        if (submitBtn) submitBtn.disabled = false;
                     } else {
                         statusBox.innerHTML = "<span class='text-danger'>" + data.message + "</span>";
-                        submitBtn.disabled = true;
+                        if (submitBtn) submitBtn.disabled = true;
                     }
                 });
         }, 300);

@@ -2,27 +2,49 @@
 require_once __DIR__ . '/../partials/header.php';
 require_once __DIR__ . '/../partials/navbar.php';
 require_once __DIR__ . '/../../src/middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../../src/helpers/BarangayHelper.php';
 AuthMiddleware::requireRole(['super_admin']);
 
 $pdo = getDB();
 
-$healthWorkers = $pdo->query("
-    SELECT *
-    FROM users
-    WHERE role = 'health_worker'
-    ORDER BY created_at DESC
-")->fetchAll();
+$q = trim($_GET['q'] ?? '');
+$barangay = trim($_GET['barangay'] ?? '');
+
+$sql = "SELECT * FROM users WHERE role = 'health_worker' ";
+$params = [];
+if (!empty($q)) {
+    $sql .= " AND email LIKE ? ";
+    $params[] = '%' . $q . '%';
+}
+if (!empty($barangay)) {
+    $sql .= " AND barangay_assigned = ? ";
+    $params[] = $barangay;
+}
+$sql .= " ORDER BY created_at DESC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$healthWorkers = $stmt->fetchAll();
+
+$barangays = BarangayHelper::getAll();
 ?>
 
 <div class="container py-4">
   <h3 class="mb-4">Health Worker User Management</h3>
 
-  <?php if (!empty($_SESSION['flash_message'])): ?>
-    <div class="alert alert-info alert-dismissible fade show">
-      <?= $_SESSION['flash_message']; unset($_SESSION['flash_message']); ?>
-      <button class="btn-close" data-bs-dismiss="alert"></button>
+  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
+    <input type="hidden" name="route" value="user/create_health_worker">
+    <div class="col-md-4"><input name="q" value="<?=htmlspecialchars($q)?>" class="form-control" placeholder="Search email"></div>
+    <div class="col-md-3">
+      <select name="barangay" class="form-select">
+        <option value="">-- Barangay --</option>
+        <?php foreach ($barangays as $b): ?>
+          <option value="<?=htmlspecialchars($b)?>" <?= $b === $barangay ? 'selected' : '' ?>><?=htmlspecialchars($b)?></option>
+        <?php endforeach; ?>
+      </select>
     </div>
-  <?php endif; ?>
+    <div class="col-md-2"><button class="btn btn-primary">Filter</button></div>
+    <div class="col-md-3 text-end"><a href="/WEBSYS_FINAL_PROJECT/public/?route=user/create_health_worker" class="btn btn-secondary">Reset</a></div>
+  </form>
 
   <div class="card shadow-sm p-4 mb-4">
     <h5>Create Health Worker Account</h5>
@@ -32,12 +54,7 @@ $healthWorkers = $pdo->query("
         <label class="form-label">Assigned Barangay</label>
         <select name="barangay_assigned" class="form-select" required>
           <option value="">-- Select Barangay --</option>
-          <?php
-            $barangays = [
-              'Ambiong', 'Loakan Proper', 'Pacdal', 'BGH Compound', 'Bakakeng Central', 'Camp 7'
-            ];
-            foreach ($barangays as $b):
-          ?>
+          <?php foreach ($barangays as $b): ?>
             <option value="<?=$b?>"><?=$b?></option>
           <?php endforeach; ?>
         </select>
@@ -100,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let typingTimeout = null;
 
-    emailField.addEventListener("input", function () {
+    emailField?.addEventListener("input", function () {
         clearTimeout(typingTimeout);
         const email = this.value.trim();
 

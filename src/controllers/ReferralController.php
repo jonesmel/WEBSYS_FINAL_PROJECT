@@ -7,18 +7,25 @@ require_once __DIR__ . '/../models/NotificationModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Flash.php';
 require_once __DIR__ . '/../helpers/EmailHelper.php';
+require_once __DIR__ . '/../helpers/BarangayHelper.php';
 
 class ReferralController {
   public function index() {
     $role = $_SESSION['user']['role'];
 
+    // filters: q, receiving_barangay, status
+    $q = trim($_GET['q'] ?? '');
+    $receiving = trim($_GET['receiving_barangay'] ?? '');
+    $status = trim($_GET['status'] ?? '');
+
     if ($role === 'super_admin') {
-        $rows = ReferralModel::getAll();
+        $rows = ReferralModel::getAllFiltered($q, $receiving, $status);
     } else {
         header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/sent");
         exit;
     }
 
+    $barangays = BarangayHelper::getAll();
     include __DIR__ . '/../../public/referrals/list.php';
   }
 
@@ -99,9 +106,7 @@ class ReferralController {
         $patients = PatientModel::getAll();
     }
 
-    $barangays = [
-        'Ambiong','Loakan Proper','Pacdal','BGH Compound','Bakakeng Central','Camp 7'
-    ];
+    $barangays = BarangayHelper::getAll();
 
     include __DIR__ . '/../../public/referrals/create.php';
   }
@@ -194,48 +199,33 @@ class ReferralController {
     AuthMiddleware::requireRole(['super_admin','health_worker']);
 
     $id = $_GET['id'] ?? null;
-
-    if (!$id) {
-      Flash::set('danger','Missing ID');
-      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
-      exit;
-    }
-
+    if (!$id) { Flash::set('danger','Missing ID'); header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index'); exit; }
     $ref = ReferralModel::getById($id);
-
-    if (!$ref) {
-      Flash::set('danger','Referral not found');
-      header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index');
-      exit;
-    }
-
+    if (!$ref) { Flash::set('danger','Referral not found'); header('Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/index'); exit; }
     if ($ref['referral_status'] === 'received') {
       Flash::set('danger','Received referrals cannot be edited.');
       header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
-
-    // Only super_admin or sender can edit
-    if ($_SESSION['user']['role'] !== 'super_admin' &&
-        $ref['created_by'] != $_SESSION['user']['user_id'])
-    {
+    if ($_SESSION['user']['role'] !== 'super_admin' && $ref['created_by'] != $_SESSION['user']['user_id']) {
       Flash::set('danger','Not authorized.');
       header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
       $data = $_POST;
-
       $patient = PatientModel::getById($data['patient_id']);
       if (!$patient) {
         Flash::set('danger','Invalid patient.');
         header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=$id");
         exit;
       }
-
       $data['tb_case_number'] = $patient['tb_case_number'];
+
+      // Check if receiving barangay changed — we'll notify new barangay after update
+      $oldReceiving = $ref['receiving_barangay'] ?? '';
+      $newReceiving = $data['receiving_barangay'] ?? '';
 
       ReferralModel::update($id, $data);
 
@@ -243,22 +233,34 @@ class ReferralController {
                           $id, null, json_encode($data),
                           $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '');
 
+      // If receiving barangay changed, notify health workers of the new barangay
+      if (!empty($newReceiving) && $newReceiving !== $oldReceiving) {
+          $receivers = UserModel::getHealthWorkersByBarangay($newReceiving);
+          foreach ($receivers as $r) {
+              NotificationModel::create([
+                  'user_id' => $r['user_id'],
+                  'patient_id' => $data['patient_id'],
+                  'type' => 'incoming_referral',
+                  'title' => 'Incoming Referral (updated)',
+                  'message' => "Referral {$ref['referral_code']} has been assigned/changed to your barangay.",
+                  'link' => "/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id"
+              ]);
+          }
+      }
+
       Flash::set('success','Referral updated.');
       header("Location: /WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=$id");
       exit;
     }
 
     $user = $_SESSION['user'];
-
     if ($user['role'] === 'health_worker') {
         $patients = PatientModel::getAllByBarangay($user['barangay_assigned']);
     } else {
         $patients = PatientModel::getAll();
     }
-    $barangays = [
-        'Ambiong','Loakan Proper','Pacdal','BGH Compound','Bakakeng Central','Camp 7'
-    ];
 
+    $barangays = BarangayHelper::getAll();
     include __DIR__ . '/../../public/referrals/edit.php';
   }
 

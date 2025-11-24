@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../../config/db.php';
 
 class ContactModel {
-
   public static function create($data) {
     $pdo = getDB();
     $code = $data['contact_code'] ?? self::generateContactCode();
@@ -75,6 +74,30 @@ class ContactModel {
       return $pdo->query($sql)->fetchAll();
   }
 
+  public static function getAllFiltered($q = '', $barangay = '') {
+      $pdo = getDB();
+      $sql = "
+          SELECT c.*, p.patient_code, p.barangay AS patient_barangay
+          FROM contacts c
+          LEFT JOIN patients p ON p.patient_id = c.patient_id
+          WHERE c.is_archived = 0
+      ";
+      $params = [];
+      if (!empty($q)) {
+          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ?)";
+          $like = '%' . $q . '%';
+          $params[] = $like; $params[] = $like; $params[] = $like;
+      }
+      if (!empty($barangay)) {
+          $sql .= " AND c.barangay = ?";
+          $params[] = $barangay;
+      }
+      $sql .= " ORDER BY c.created_at DESC";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute($params);
+      return $stmt->fetchAll();
+  }
+
   public static function getByBarangay($barangay) {
       $pdo = getDB();
       $stmt = $pdo->prepare("
@@ -85,6 +108,26 @@ class ContactModel {
           ORDER BY c.created_at DESC
       ");
       $stmt->execute([$barangay]);
+      return $stmt->fetchAll();
+  }
+
+  public static function getByBarangayFiltered($barangay, $q = '') {
+      $pdo = getDB();
+      $sql = "
+          SELECT c.*, p.patient_code
+          FROM contacts c
+          JOIN patients p ON p.patient_id = c.patient_id
+          WHERE p.barangay = ? AND c.is_archived = 0
+      ";
+      $params = [$barangay];
+      if (!empty($q)) {
+          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ?)";
+          $like = '%' . $q . '%';
+          $params[] = $like; $params[] = $like; $params[] = $like;
+      }
+      $sql .= " ORDER BY c.created_at DESC";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute($params);
       return $stmt->fetchAll();
   }
 }

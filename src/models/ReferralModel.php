@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../../config/db.php';
 
 class ReferralModel {
-
   private static function generateCodePDO() {
     return 'REF-' . date('Ymd') . '-' . substr(bin2hex(random_bytes(4)), 0, 6);
   }
@@ -26,7 +25,7 @@ class ReferralModel {
       $data['patient_id'],
       $data['tb_case_number'] ?? null,
       $data['referral_date'] ?? null,
-      $data['referring_unit'] ?? null,      
+      $data['referring_unit'] ?? null,
       $data['referring_tel'] ?? null,
       $data['referring_email'] ?? null,
       $data['referring_address'] ?? null,
@@ -57,6 +56,33 @@ class ReferralModel {
                LEFT JOIN patients p ON p.patient_id = r.patient_id 
                ORDER BY r.created_at DESC')
       ->fetchAll();
+  }
+
+  public static function getAllFiltered($q = '', $receiving_barangay = '', $status = '') {
+    $pdo = getDB();
+    $sql = "SELECT r.*, p.patient_code FROM referrals r LEFT JOIN patients p ON p.patient_id = r.patient_id WHERE 1=1 ";
+    $params = [];
+
+    if (!empty($q)) {
+        $sql .= "AND (r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ?) ";
+        $like = '%' . $q . '%';
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+    }
+    if (!empty($receiving_barangay)) {
+        $sql .= "AND r.receiving_barangay = ? ";
+        $params[] = $receiving_barangay;
+    }
+    if (!empty($status)) {
+        $sql .= "AND r.referral_status = ? ";
+        $params[] = $status;
+    }
+
+    $sql .= "ORDER BY r.created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
   }
 
   public static function getByPatient($patient_id) {
