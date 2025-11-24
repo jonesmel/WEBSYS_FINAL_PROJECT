@@ -3,7 +3,7 @@ if (!isset($_SESSION)) session_start();
 $user = $_SESSION['user'] ?? null;
 ?>
 
-<nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg tb-navbar mb-4" data-bs-theme="dark">
   <div class="container-fluid">
 
     <?php
@@ -94,7 +94,6 @@ $user = $_SESSION['user'] ?? null;
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/index">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/referrals">Referrals</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/notifications">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/referrals">Referrals</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/profile">Profile</a></li>
           <?php endif; ?>
         <?php endif; ?>
