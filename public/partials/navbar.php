@@ -4,10 +4,14 @@ $user = $_SESSION['user'] ?? null;
 require_once __DIR__ . '/../../src/models/NotificationModel.php';
 ?>
 
+
+<nav class="navbar navbar-expand-lg tb-navbar mb-4" data-bs-theme="dark">
+
 <!-- Make sure Bootstrap Icons are loaded -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 <nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
+
   <div class="container-fluid">
 
     <?php
