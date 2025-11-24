@@ -7,16 +7,16 @@ $user = $_SESSION['user'];
 
 <div class="container py-4" style="max-width:700px;">
 
-  <h3 class="mb-4">My Profile</h3>
+  <h3 class="mb-4 page-title">My Profile</h3>
 
   <div class="card p-4 shadow-sm mb-4">
-    <h5 class="mb-3">Account Information</h5>
+    <h5>Account Information</h5>
     <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
     <p><strong>Role:</strong> Super Admin</p>
   </div>
 
   <div class="card p-4 shadow-sm mb-4">
-    <h5 class="mb-3">Change Password</h5>
+    <h5>Change Password</h5>
 
     <form method="POST" action="/WEBSYS_FINAL_PROJECT/public/?route=auth/change_password">
       <input type="hidden" name="uid" value="<?= $user['user_id'] ?>">

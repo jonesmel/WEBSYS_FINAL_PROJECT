@@ -15,7 +15,7 @@ foreach ($patients as $p) {
 ?>
 
 <div class="container py-4">
-  <h3 class="mb-4">Super Admin Dashboard</h3>
+  <h3 class="mb-4 page-title">Super Admin Dashboard</h3>
 
   <div class="mb-3">
     <a href="/WEBSYS_FINAL_PROJECT/public/?route=export/patients_csv"
@@ -28,13 +28,13 @@ foreach ($patients as $p) {
     <div class="col-md-4">
       <div class="card shadow-sm p-3 text-center">
         <h5>Total Patients</h5>
-        <div class="display-6 fw-bold"><?=$total?></div>
+        <div class="display-6 fw-bold" style="color:#046A38;"><?=$total?></div>
       </div>
     </div>
 
     <div class="col-md-8">
       <div class="card shadow-sm p-3">
-        <h5>Patients per Barangay</h5>
+        <h5 class="table-title">Patients per Barangay</h5>
         <table class="table table-sm table-bordered mt-2">
           <thead>
             <tr>
