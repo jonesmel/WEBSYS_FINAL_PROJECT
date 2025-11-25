@@ -52,12 +52,10 @@ $barangays = BarangayHelper::getAll();
       <div class="mb-3">
         <label class="form-label">Barangay</label>
         <select name="barangay" class="form-select" required>
-            <option value="">-- Select Barangay --</option>
-            <?php
-              foreach ($barangays as $b):
-            ?>
-              <option value="<?= $b ?>"><?= $b ?></option>
-            <?php endforeach; ?>
+          <option value="">-- Select --</option>
+          <?php foreach ($barangays as $b): ?>
+            <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+          <?php endforeach; ?>
         </select>
       </div>
 
@@ -65,5 +63,14 @@ $barangays = BarangayHelper::getAll();
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const brgySelect = document.querySelector("select[name='barangay']");
+    if (brgySelect) {
+        createSearchableDropdown(brgySelect);
+    }
+});
+</script>
 
 <?php include __DIR__.'/../partials/footer.php'; ?>

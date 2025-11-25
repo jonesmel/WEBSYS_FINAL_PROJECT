@@ -144,4 +144,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='barangay']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='barangay_assigned']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
 <?php include __DIR__ . '/../partials/footer.php'; ?>

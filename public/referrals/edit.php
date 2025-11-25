@@ -117,4 +117,11 @@ if (!isset($ref)) {
   </div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='receiving_barangay']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
 <?php include __DIR__.'/../partials/footer.php'; ?>

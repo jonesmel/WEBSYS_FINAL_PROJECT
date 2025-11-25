@@ -3,7 +3,6 @@ require_once __DIR__ . '/../models/UserModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class AjaxController {
-
     public function check_email() {
         header('Content-Type: application/json');
 
@@ -21,5 +20,22 @@ class AjaxController {
         } else {
             echo json_encode(['valid' => true, 'message' => 'Email is available']);
         }
+    }
+
+    public function search_barangay() {
+        header('Content-Type: application/json');
+
+        require_once __DIR__ . '/../helpers/BarangayHelper.php';
+
+        $q = strtolower(trim($_GET['q'] ?? ''));
+
+        $all = BarangayHelper::getAll();
+
+        // simple filter
+        $filtered = array_filter($all, function($b) use ($q) {
+            return $q === '' || strpos(strtolower($b), $q) !== false;
+        });
+
+        echo json_encode(array_values($filtered));
     }
 }

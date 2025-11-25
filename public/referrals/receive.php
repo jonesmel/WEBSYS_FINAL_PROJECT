@@ -41,4 +41,11 @@ require_once __DIR__.'/../partials/navbar.php';
 
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='receiving_unit']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
 <?php require_once __DIR__.'/../partials/footer.php'; ?>

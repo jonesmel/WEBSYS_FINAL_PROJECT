@@ -89,4 +89,19 @@ require_once __DIR__.'/../partials/navbar.php';
   </form>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='referring_unit']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const brgySelect = document.querySelector("select[name='receiving_barangay']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
+
+
 <?php require_once __DIR__.'/../partials/footer.php'; ?>
