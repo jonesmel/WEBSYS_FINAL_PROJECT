@@ -58,7 +58,7 @@ class PatientController {
             );
 
             Flash::set('success','Patient added.');
-            header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/index");
+            header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=".$id);
             exit;
         }
 

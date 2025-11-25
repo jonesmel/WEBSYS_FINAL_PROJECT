@@ -3,15 +3,22 @@ require_once __DIR__ . '/../models/NotificationModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class NotificationController {
-
     public function list() {
         AuthMiddleware::requireLogin();
         $uid = $_SESSION['user']['user_id'];
+        $role = $_SESSION['user']['role'];
 
-        // mark everything as read when page opens
+        // ALWAYS mark all for THIS USER as read
         NotificationModel::markAllReadForUser($uid);
 
-        $rows = NotificationModel::getByUser($uid);
+        if ($role === 'super_admin') {
+            // super admin sees all notifications
+            $rows = NotificationModel::getAllWithUserInfo();
+        } else {
+            // others see only theirs
+            $rows = NotificationModel::getByUser($uid);
+        }
+
         include __DIR__ . '/../../public/notifications/list.php';
     }
 

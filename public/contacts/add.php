@@ -3,6 +3,8 @@ require_once __DIR__.'/../partials/header.php';
 require_once __DIR__.'/../partials/navbar.php';
 require_once __DIR__.'/../../src/middleware/AuthMiddleware.php';
 AuthMiddleware::requireRole(['super_admin','health_worker']);
+
+$barangays = BarangayHelper::getAll();
 ?>
 
 <div class="container py-4" style="max-width:700px;">
@@ -52,10 +54,6 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
         <select name="barangay" class="form-select" required>
             <option value="">-- Select Barangay --</option>
             <?php
-              $barangays = [
-                'Ambiong','Loakan Proper','Pacdal',
-                'BGH Compound','Bakakeng Central','Camp 7'
-              ];
               foreach ($barangays as $b):
             ?>
               <option value="<?= $b ?>"><?= $b ?></option>

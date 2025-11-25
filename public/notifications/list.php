@@ -48,7 +48,14 @@ $type_map = [
                     <?php foreach ($rows as $n): ?>
                         <tr class="<?= $n['is_read'] ? '' : 'table-warning' ?>">
                             <?php if ($role === 'super_admin'): ?>
-                                <td><?= htmlspecialchars($n['user_email'] ?? 'N/A') ?></td>
+                                <td>
+                                    <?php if (!empty($n['email'])): ?>
+                                        <?= htmlspecialchars(ucfirst($n['role'])) ?> — 
+                                        <?= htmlspecialchars($n['email']) ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">Unknown User</span>
+                                    <?php endif; ?>
+                                </td>
                             <?php endif; ?>
 
                             <td><?= htmlspecialchars($n['title']) ?></td>

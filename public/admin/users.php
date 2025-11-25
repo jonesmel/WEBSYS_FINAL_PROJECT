@@ -73,7 +73,7 @@ $barangays = BarangayHelper::getAll();
   <div class="card shadow-sm p-4 mb-4">
     <h5 class="mb-3">Create User Account for Patient</h5>
 
-    <form method="POST" class="row g-3">
+    <form method="POST" class="row g-3" action="/WEBSYS_FINAL_PROJECT/public/?route=user/create_patient_user">
 
       <div class="col-md-6">
         <label class="form-label">Select Patient (patient_code)</label>

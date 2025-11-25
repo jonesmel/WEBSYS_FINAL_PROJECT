@@ -5,53 +5,47 @@ require_once __DIR__.'/../../src/middleware/AuthMiddleware.php';
 require_once __DIR__.'/../../src/helpers/BarangayHelper.php';
 AuthMiddleware::requireRole(['super_admin','health_worker']);
 
+$user = $_SESSION['user'];
 $barangays = BarangayHelper::getAll();
 ?>
 
 <div class="container py-4" style="max-width:700px;">
   <h3 class="mb-4">Add Patient</h3>
+
   <div class="card shadow-sm p-4">
     <form method="POST" action="/WEBSYS_FINAL_PROJECT/public/?route=patient/create">
 
-      <div class="mb-3">
-        <label class="form-label">Patient Code (leave blank to auto-generate)</label>
-        <input type="text" name="patient_code" class="form-control" maxlength="50">
-      </div>
+      <input type="hidden" name="patient_code" value="">
 
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Age</label>
-          <input type="number" name="age" class="form-control" min="0" max="120">
+          <input type="number" name="age" class="form-control">
         </div>
 
         <div class="col-md-4 mb-3">
           <label class="form-label">Sex</label>
           <select name="sex" class="form-select">
-            <option value="Unknown">Unknown</option>
-            <option value="M">M</option>
-            <option value="F">F</option>
+            <option>Unknown</option>
+            <option>M</option>
+            <option>F</option>
           </select>
         </div>
       </div>
 
-      <?php if ($user && $user['role'] === 'health_worker'): ?>
+      <?php if ($user['role'] === 'health_worker'): ?>
         <div class="mb-3">
-          <label class="form-label">Barangay (assigned)</label>
-          <input type="text"
-                 class="form-control"
-                 value="<?= htmlspecialchars($user['barangay_assigned']) ?>"
-                 disabled>
+          <label class="form-label">Barangay</label>
+          <input class="form-control" value="<?= htmlspecialchars($user['barangay_assigned']) ?>" disabled>
           <input type="hidden" name="barangay" value="<?= htmlspecialchars($user['barangay_assigned']) ?>">
         </div>
       <?php else: ?>
         <div class="mb-3">
           <label class="form-label">Barangay</label>
           <select name="barangay" class="form-select" required>
-            <option value="">-- Select Barangay --</option>
+            <option value="">-- Select --</option>
             <?php foreach ($barangays as $b): ?>
-              <option value="<?= htmlspecialchars($b) ?>">
-                <?= htmlspecialchars($b) ?>
-              </option>
+              <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -66,27 +60,21 @@ $barangays = BarangayHelper::getAll();
         <div class="col-md-4 mb-3">
           <label class="form-label">Bacteriological Status</label>
           <select name="bacteriological_status" class="form-select">
-            <option>Unknown</option>
-            <option>BC</option>
-            <option>CD</option>
+            <option>Unknown</option><option>BC</option><option>CD</option>
           </select>
         </div>
 
         <div class="col-md-4 mb-3">
           <label class="form-label">Anatomical Site</label>
           <select name="anatomical_site" class="form-select">
-            <option>Unknown</option>
-            <option>P</option>
-            <option>EP</option>
+            <option>Unknown</option><option>P</option><option>EP</option>
           </select>
         </div>
 
         <div class="col-md-4 mb-3">
           <label class="form-label">Drug Susceptibility</label>
           <select name="drug_susceptibility" class="form-select">
-            <option>Unknown</option>
-            <option>DS</option>
-            <option>DR</option>
+            <option>Unknown</option><option>DS</option><option>DR</option>
           </select>
         </div>
       </div>
@@ -101,6 +89,7 @@ $barangays = BarangayHelper::getAll();
       </div>
 
       <button class="btn btn-primary">Save</button>
+
     </form>
   </div>
 </div>

@@ -34,94 +34,103 @@ class PDFHelper {
     $safe = function($x){ return htmlspecialchars($x ?? '', ENT_QUOTES, 'UTF-8'); };
 
     // Simple two-column/boxed layout to capture key form 7 fields.
-    return "
-    <html>
-    <head>
-      <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
-      <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
-        .container { width: 100%; }
-        .header { text-align:center; font-size:16px; margin-bottom:10px; font-weight:bold; }
-        .section { border:1px solid #222; padding:10px; margin-bottom:10px; }
-        .label { font-weight:bold; display:block; margin-bottom:4px; }
-        .two { display:flex; gap:12px; }
-        .col { flex:1; }
-        .small { font-size:11px; color:#333; }
-        .footer-note { font-size:10px; color:#666; margin-top:8px; }
-        pre { white-space:pre-wrap; font-family: inherit; }
-      </style>
-    </head>
-    <body>
-      <div class='container'>
-        <div class='header'>FORM 7 — TB Referral / Return Slip</div>
+return "
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; line-height:1.4; }
+    .container { width: 100%; }
+    .header { text-align:center; font-size:18px; margin-bottom:15px; font-weight:bold; text-transform:uppercase; }
+    table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+    th, td { border:1px solid #444; padding:6px; font-size:12px; text-align:left; vertical-align:top; }
+    th { background:#f2f2f2; font-weight:bold; }
+    .footer-note { font-size:10px; color:#666; margin-top:12px; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
+    .line { border-bottom:1px solid #000; min-width:100px; display:inline-block; }
+    .longline { border-bottom:1px solid #000; min-width:250px; display:inline-block; }
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>Form 7 — TB Referral / Return Slip</div>
 
-        <div class='section'>
-          <div class='two'>
-            <div class='col'>
-              <div class='label'>Referral Code</div>
-              <div class='small'>". $safe($ref['referral_code']) ."</div>
-            </div>
-            <div class='col'>
-              <div class='label'>Referral Date</div>
-              <div class='small'>". $safe(substr($ref['referral_date'] ?? '', 0, 10)) ."</div>
-            </div>
-          </div>
+    <table>
+      <tr><th>Referral Code</th><th>Referral Date</th></tr>
+      <tr>
+        <td>". $safe($ref['referral_code']) ."</td>
+        <td>". $safe(substr($ref['referral_date'] ?? '', 0, 10)) ."</td>
+      </tr>
+    </table>
 
-          <div style='margin-top:8px'>
-            <div class='label'>Patient</div>
-            <div class='small'>
-              <strong>Patient code:</strong> ". $safe($patient['patient_code']) ."<br>
-              <strong>TB case #:</strong> ". $safe($patient['tb_case_number']) ."<br>
-              <strong>Barangay:</strong> ". $safe($patient['barangay'] ?? $ref['patient_barangay']) ."
-            </div>
-          </div>
-        </div>
+    <table>
+      <tr><th>Patient Code</th><th>TB Case #</th><th>Barangay</th></tr>
+      <tr>
+        <td>". $safe($patient['patient_code']) ."</td>
+        <td>". $safe($patient['tb_case_number']) ."</td>
+        <td>". $safe($patient['barangay'] ?? $ref['patient_barangay']) ."</td>
+      </tr>
+    </table>
 
-        <div class='section'>
-          <div class='label'>Referring (Sender)</div>
-          <div class='small'>
-            <strong>Unit / Barangay:</strong> ". $safe($ref['referring_unit']) ."<br>
-            <strong>Contact (Tel):</strong> ". $safe($ref['referring_tel']) ."<br>
-            <strong>Email:</strong> ". $safe($ref['referring_email']) ."<br>
-            <strong>Address:</strong> ". $safe($ref['referring_address']) ."
-          </div>
-        </div>
+    <table>
+      <tr><th colspan='4'>Referring (Sender)</th></tr>
+      <tr>
+        <td><strong>Unit / Barangay</strong><br>". $safe($ref['referring_unit']) ."</td>
+        <td><strong>Tel</strong><br>". $safe($ref['referring_tel']) ."</td>
+        <td><strong>Email</strong><br>". $safe($ref['referring_email']) ."</td>
+        <td><strong>Address</strong><br>". $safe($ref['referring_address']) ."</td>
+      </tr>
+    </table>
 
-        <div class='section'>
-          <div class='label'>Reason for Referral</div>
-          <div class='small'><pre>". $safe($ref['reason_for_referral']) ."</pre></div>
+    <table>
+      <tr><th>Reason for Referral</th></tr>
+      <tr><td><pre>". $safe($ref['reason_for_referral']) ."</pre></td></tr>
+      <tr><th>Details / Clinical Summary</th></tr>
+      <tr><td><pre>". $safe($ref['details']) ."</pre></td></tr>
+    </table>
 
-          <div class='label' style='margin-top:8px'>Details / Clinical Summary</div>
-          <div class='small'><pre>". $safe($ref['details']) ."</pre></div>
-        </div>
+    <table>
+      <tr><th colspan='4'>Receiving (to be filled by receiving unit)</th></tr>
+      <tr>
+        <td><strong>Barangay</strong><br>". $safe($ref['receiving_barangay']) ."</td>
+        <td><strong>Unit</strong><br>". $safe($ref['receiving_unit']) ."</td>
+        <td><strong>Officer</strong><br>". $safe($ref['receiving_officer']) ."</td>
+        <td><strong>Date Received</strong><br>". $safe(substr($ref['date_received'] ?? '', 0, 10)) ."</td>
+      </tr>
+    </table>
 
-        <div class='section'>
-          <div class='label'>Receiving (to be filled by receiving unit)</div>
-          <div class='small'>
-            <strong>Receiving Barangay:</strong> ". $safe($ref['receiving_barangay']) ."<br>
-            <strong>Receiving Unit:</strong> ". $safe($ref['receiving_unit']) ."<br>
-            <strong>Receiving Officer:</strong> ". $safe($ref['receiving_officer']) ."<br>
-            <strong>Date Received:</strong> ". $safe(substr($ref['date_received'] ?? '', 0, 10)) ."
-          </div>
+    <table>
+      <tr><th>Action Taken</th></tr>
+      <tr>
+        <td>( ) Lab test <span class='line'>&nbsp;</span> performed, write date ____/____/____ and result ______________________________________</td>
+      </tr>
+      <tr>
+        <td>( ) Patient started/resumed treatment: Date Registered/Resumed ____/____/____ Regimen: ________________________</td>
+      </tr>
+      <tr>
+        <td>( ) Not treated — specify reasons: ________________________________________________________________________________</td>
+      </tr>
+      <tr>
+        <td>( ) Other, specify: ________________________________________________________________________________________________</td>
+      </tr>
+    </table>
 
-          <div style='margin-top:8px'>
-            <div class='label'>Action Taken</div>
-            <div class='small'><pre>". $safe($ref['action_taken']) ."</pre></div>
-          </div>
+    <table>
+      <tr><th>Remarks</th></tr>
+      <tr>
+        <td>Remarks: <span class='longline' style='min-width:100%;'>&nbsp;</span><br><br>
+        <span class='longline' style='min-width:100%;'>&nbsp;</span><br><br>
+        <span class='longline' style='min-width:100%;'>&nbsp;</span></td>
+      </tr>
+    </table>
 
-          <div style='margin-top:8px'>
-            <div class='label'>Remarks</div>
-            <div class='small'><pre>". $safe($ref['remarks']) ."</pre></div>
-          </div>
-        </div>
-
-        <div class='footer-note'>
-          Generated by TB-MAS — This document is for clinical communication. If printed, retain a copy for patient record.
-        </div>
-      </div>
-    </body>
-    </html>
-    ";
+    <div class='footer-note'>
+      Generated by TB-MAS — This document is for clinical communication.<br>
+      If printed, retain a copy for patient record.
+    </div>
+  </div>
+</body>
+</html>
+";
   }
   public static function generateContactsPDF($patient_id) {
     require_once __DIR__ . '/../models/ContactModel.php';

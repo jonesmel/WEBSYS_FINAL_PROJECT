@@ -87,9 +87,26 @@ class NotificationModel {
 
     public static function getByUser($uid) {
         $pdo = getDB();
-        $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt = $pdo->prepare("
+            SELECT n.*, u.email, u.role
+            FROM notifications n
+            LEFT JOIN users u ON u.user_id = n.user_id
+            WHERE n.user_id = ?
+            ORDER BY n.created_at DESC
+        ");
         $stmt->execute([$uid]);
         return $stmt->fetchAll();
+    }
+
+    public static function getAllWithUserInfo() {
+        $pdo = getDB();
+        $sql = "
+            SELECT n.*, u.email, u.role
+            FROM notifications n
+            LEFT JOIN users u ON u.user_id = n.user_id
+            ORDER BY n.created_at DESC
+        ";
+        return $pdo->query($sql)->fetchAll();
     }
 
     public static function getLatestForUser($uid, $limit = 10) {

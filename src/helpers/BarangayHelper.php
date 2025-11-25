@@ -2,7 +2,7 @@
 class BarangayHelper {
 
     public static function getAll(): array {
-        $path = '/mnt/data/barangays.txt';
+        $path = '../config/barangays.txt';
         $list = [];
 
         if (file_exists($path) && is_readable($path)) {
@@ -17,7 +17,7 @@ class BarangayHelper {
         if (empty($list)) {
             $list = [
                 'Ambiong','Loakan Proper','Pacdal','BGH Compound',
-                'Bakakeng Central','Camp 7'
+                'Bakakeng Central','Camp 7','Irisan'
             ];
         }
 
