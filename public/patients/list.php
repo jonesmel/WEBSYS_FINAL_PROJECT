@@ -13,15 +13,16 @@ require_once __DIR__.'/../partials/navbar.php';
   </div>
 
   <!-- Filters -->
-  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
+  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/" data-ajax="patients">
     <input type="hidden" name="route" value="patient/index">
-    <div class="col-md-4"><input name="q" value="<?=htmlspecialchars($_GET['q'] ?? '')?>" class="form-control" placeholder="Search patient code or TB case"></div>
+    <div class="col-md-4">
+      <input name="q" value="<?=htmlspecialchars($_GET['q'] ?? '')?>" class="form-control" placeholder="Search patient code or TB case">
+    </div>
     <div class="col-md-3">
-      <select name="barangay" class="form-select">
+      <select name="barangay" class="form-select" data-placeholder="Search barangay...">
         <option value="">-- Barangay --</option>
         <?php
-          $barangays = $GLOBALS['barangays'] ?? (function_exists('array')? []: []);
-          // if $barangays not set by controller, fallback:
+          $barangays = $GLOBALS['barangays'] ?? [];
           if (empty($barangays)) {
             require_once __DIR__ . '/../../src/helpers/BarangayHelper.php';
             $barangays = BarangayHelper::getAll();
@@ -41,16 +42,16 @@ require_once __DIR__.'/../partials/navbar.php';
       <table class="table table-bordered table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th>Patient Code</th>
-            <th>Barangay</th>
-            <th>Age</th>
-            <th>Sex</th>
-            <th>Case #</th>
-            <th>User Account</th>
+            <th style="width:220px;">Patient Code</th>
+            <th style="width:200px;">Barangay</th>
+            <th style="width:80px;">Age</th>
+            <th style="width:80px;">Sex</th>
+            <th style="width:220px;">Case #</th>
+            <th style="width:140px;">User Account</th>
             <th width="300">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="patients-table-body">
           <?php foreach ($patients as $p): ?>
           <tr>
             <td><?= htmlspecialchars($p['patient_code']) ?></td>
@@ -91,5 +92,13 @@ require_once __DIR__.'/../partials/navbar.php';
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Initialize searchable barangay dropdown (createSearchableDropdown in app.js)
+    const brgySelect = document.querySelector("select[name='barangay']");
+    if (brgySelect) createSearchableDropdown(brgySelect);
+});
+</script>
 
 <?php include __DIR__.'/../partials/footer.php'; ?>

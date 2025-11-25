@@ -18,24 +18,29 @@ $pdo = getDB();
 $q = trim($_GET['q'] ?? '');
 $barangay = trim($_GET['barangay'] ?? '');
 
-// patientUsers query with backend filtering
 $sql = "
     SELECT u.*, p.patient_code, p.barangay AS patient_barangay
     FROM users u
     JOIN patients p ON p.user_id = u.user_id
     WHERE u.role = 'patient'
 ";
+
 $params = [];
-if (!empty($q)) {
+
+if ($q !== '') {
     $sql .= " AND (u.email LIKE ? OR p.patient_code LIKE ?)";
-    $like = '%' . $q . '%';
-    $params[] = $like; $params[] = $like;
+    $like = "%$q%";
+    $params[] = $like;
+    $params[] = $like;
 }
-if (!empty($barangay)) {
+
+if ($barangay !== '') {
     $sql .= " AND p.barangay = ?";
     $params[] = $barangay;
 }
+
 $sql .= " ORDER BY u.created_at DESC";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $patientUsers = $stmt->fetchAll();
@@ -46,30 +51,40 @@ $barangays = BarangayHelper::getAll();
 <div class="container py-4">
   <h3 class="mb-4">Patient User Management</h3>
 
-  <!-- Filter form -->
-  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
+  <!-- AJAX Filter Form -->
+  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/" data-ajax="patient_users">
     <input type="hidden" name="route" value="admin/users">
-    <div class="col-md-4"><input name="q" value="<?=htmlspecialchars($q)?>" class="form-control" placeholder="Search email or patient code"></div>
+
+    <div class="col-md-4">
+      <input name="q" value="<?= htmlspecialchars($q) ?>" class="form-control" placeholder="Search email or patient code">
+    </div>
+
     <div class="col-md-3">
       <select name="barangay" class="form-select">
         <option value="">-- Barangay --</option>
         <?php foreach ($barangays as $b): ?>
-          <option value="<?=htmlspecialchars($b)?>" <?= $b === $barangay ? 'selected' : '' ?>><?=htmlspecialchars($b)?></option>
+          <option value="<?= htmlspecialchars($b) ?>" <?= ($b === $barangay) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($b) ?>
+          </option>
         <?php endforeach; ?>
       </select>
     </div>
+
     <div class="col-md-2"><button class="btn btn-primary">Filter</button></div>
-    <div class="col-md-3 text-end"><a href="/WEBSYS_FINAL_PROJECT/public/?route=admin/users" class="btn btn-secondary">Reset</a></div>
+
+    <div class="col-md-3 text-end">
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=admin/users" class="btn btn-secondary">Reset</a>
+    </div>
   </form>
 
   <?php if (!empty($_SESSION['flash_message'])): ?>
-      <div class="alert alert-<?=htmlspecialchars($_SESSION['flash_message_type'] ?? 'info')?> alert-dismissible fade show">
-        <?= $_SESSION['flash_message']; unset($_SESSION['flash_message']); unset($_SESSION['flash_message_type']); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
+    <div class="alert alert-<?= htmlspecialchars($_SESSION['flash_message_type'] ?? 'info') ?> alert-dismissible fade show">
+      <?= $_SESSION['flash_message']; unset($_SESSION['flash_message']); unset($_SESSION['flash_message_type']); ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
   <?php endif; ?>
 
-  <!-- Create Patient User -->
+  <!-- CREATE PATIENT USER -->
   <div class="card shadow-sm p-4 mb-4">
     <h5 class="mb-3">Create User Account for Patient</h5>
 
@@ -80,9 +95,9 @@ $barangays = BarangayHelper::getAll();
         <select name="patient_id" class="form-select" required>
           <option value="">-- Select --</option>
           <?php foreach ($patients as $p): ?>
-            <option value="<?=$p['patient_id']?>">
-              <?=htmlspecialchars($p['patient_code'])?>
-              <?=isset($p['barangay']) ? '('.htmlspecialchars($p['barangay']).')' : ''?>
+            <option value="<?= $p['patient_id'] ?>">
+              <?= htmlspecialchars($p['patient_code']) ?>
+              <?= isset($p['barangay']) ? '(' . htmlspecialchars($p['barangay']) . ')' : '' ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -100,7 +115,7 @@ $barangays = BarangayHelper::getAll();
     </form>
   </div>
 
-  <!-- PATIENT USER TABLE -->
+  <!-- TABLE -->
   <div class="card shadow-sm p-4 mb-4">
     <h5>Existing Patient User Accounts</h5>
 
@@ -115,69 +130,36 @@ $barangays = BarangayHelper::getAll();
             <th width="90"></th>
           </tr>
         </thead>
-        <tbody>
+
+        <tbody class="patient-table-body">
         <?php foreach ($patientUsers as $u): ?>
           <tr>
-            <td><?=htmlspecialchars($u['email'])?></td>
-            <td><?= $u['is_verified'] 
-                ? '<span class="badge bg-success">Yes</span>'
-                : '<span class="badge bg-warning text-dark">No</span>' ?></td>
-            <td><?=htmlspecialchars($u['patient_code'])?></td>
-            <td><?=htmlspecialchars($u['patient_barangay'])?></td>
+            <td><?= htmlspecialchars($u['email']) ?></td>
+            <td><?= $u['is_verified']
+                  ? '<span class="badge bg-success">Yes</span>'
+                  : '<span class="badge bg-warning text-dark">No</span>' ?>
+            </td>
+            <td><?= htmlspecialchars($u['patient_code']) ?></td>
+            <td><?= htmlspecialchars($u['patient_barangay']) ?></td>
             <td>
-              <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/delete_user&id=<?=$u['user_id']?>"
+              <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/delete_user&id=<?= $u['user_id'] ?>"
                 onclick="return confirm('Delete this user?');"
                 class="btn btn-danger btn-sm w-100">Delete</a>
             </td>
           </tr>
         <?php endforeach; ?>
         </tbody>
+
       </table>
     </div>
-
   </div>
+
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const emailField = document.querySelector("input[name='email']");
-    const statusBox = document.getElementById("email-status");
-    const submitBtn = document.querySelector("button[type='submit']");
-    if (submitBtn) submitBtn.disabled = true;
-
-    let typingTimeout = null;
-
-    emailField?.addEventListener("input", function () {
-        clearTimeout(typingTimeout);
-        const email = this.value.trim();
-
-        if (email.length === 0) {
-            statusBox.innerHTML = "";
-            if (submitBtn) submitBtn.disabled = true;
-            return;
-        }
-
-        typingTimeout = setTimeout(() => {
-            fetch("/WEBSYS_FINAL_PROJECT/public/?route=ajax/check_email&email=" + encodeURIComponent(email))
-                .then(res => res.json())
-                .then(data => {
-                    if (data.valid) {
-                        statusBox.innerHTML = "<span class='text-success'>" + data.message + "</span>";
-                        if (submitBtn) submitBtn.disabled = false;
-                    } else {
-                        statusBox.innerHTML = "<span class='text-danger'>" + data.message + "</span>";
-                        if (submitBtn) submitBtn.disabled = true;
-                    }
-                });
-        }, 300);
-    });
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const brgySelect = document.querySelector("select[name='barangay']");
-    if (brgySelect) createSearchableDropdown(brgySelect);
+    const patientSelect = document.querySelector("select[name='patient_id']");
+    if (patientSelect) createSearchablePatientDropdown(patientSelect);
 });
 </script>
 
