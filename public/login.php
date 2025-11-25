@@ -27,3 +27,4 @@ include __DIR__ . '/partials/navbar.php';
 </div>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
+

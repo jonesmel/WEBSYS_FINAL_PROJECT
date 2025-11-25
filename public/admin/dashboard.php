@@ -22,6 +22,11 @@ foreach ($patients as $p) {
       class="btn btn-outline-primary btn-sm">
       Export Patients CSV
     </a>
+
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=export/patients_pdf"
+      class="btn btn-outline-danger btn-sm ms-2">
+      Print Patients PDF
+    </a>
   </div>
   
   <div class="row g-3">
