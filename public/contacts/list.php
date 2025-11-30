@@ -4,58 +4,94 @@ require_once __DIR__.'/../partials/navbar.php';
 ?>
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Contacts</h3>
-    <a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/add" class="btn btn-primary">Add Contact</a>
-  </div>
+  <h3 class="mb-3">Contact Tracing</h3>
 
-  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/">
-    <input type="hidden" name="route" value="contact/list">
-    <div class="col-md-4"><input name="q" value="<?=htmlspecialchars($_GET['q'] ?? '')?>" class="form-control" placeholder="Search contact code / patient code"></div>
-    <div class="col-md-3">
-      <?php require_once __DIR__ . '/../../src/helpers/BarangayHelper.php'; $barangays = BarangayHelper::getAll(); ?>
-      <select name="barangay" class="form-select">
-        <option value="">-- Barangay --</option>
-        <?php foreach ($barangays as $b): ?>
-          <option value="<?=htmlspecialchars($b)?>" <?= (isset($_GET['barangay']) && $_GET['barangay']===$b) ? 'selected' : '' ?>><?=htmlspecialchars($b)?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-    <div class="col-md-2"><button class="btn btn-primary">Filter</button></div>
-    <div class="col-md-3 text-end"><a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list" class="btn btn-secondary">Reset</a></div>
-  </form>
+  <div class="d-flex justify-content-between align-items-end mb-3">
+
+    <!-- Add Contact button aligned with inputs -->
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/add"
+       class="btn btn-primary"
+       style="height: 38px; display: flex; align-items: center;">
+       Add Contact
+    </a>
+
+    <!-- SEARCH + FILTERS -->
+    <form class="d-flex gap-3 align-items-end"
+          method="GET"
+          action="/WEBSYS_FINAL_PROJECT/public/"
+          data-ajax="contacts"
+          style="max-width: 600px;">
+
+      <input type="hidden" name="route" value="contact/list">
+
+      <!-- Search All Fields -->
+      <div class="d-flex flex-column" style="width: 250px;">
+        <label class="form-label mb-1">Search All Fields</label>
+        <input name="q"
+               value="<?=htmlspecialchars($_GET['q'] ?? '')?>"
+               class="form-control"
+               placeholder="Contact code, patient code, age, sex, status, dates, etc.">
+      </div>
+
+      <!-- Barangay Filter -->
+      <div class="d-flex flex-column" style="width: 250px;">
+        <label class="form-label mb-1">Filter by Barangay</label>
+        <?php require_once __DIR__ . '/../../src/helpers/BarangayHelper.php'; 
+              $barangays = BarangayHelper::getAll(); ?>
+        <select name="barangay" class="form-select">
+          <option value="">All Barangays</option>
+          <?php foreach ($barangays as $b): ?>
+            <option value="<?=htmlspecialchars($b)?>"
+              <?= (isset($_GET['barangay']) && $_GET['barangay'] === $b) ? 'selected' : '' ?>>
+              <?=htmlspecialchars($b)?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <button type="button"
+              class="btn btn-secondary search-clear-btn"
+              style="height: 38px;"
+              onclick="clearFilters(this.closest('form'))">
+        Clear
+      </button>
+
+    </form>
+  </div>
 
   <div class="card shadow-sm p-3">
     <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
+      <table class="table table-striped table-bordered table-hover align-middle">
         <thead>
-          <tr>
+          <tr style="text-align: center;">
             <th>Contact Code</th>
-            <th>Patient Code</th>
             <th>Barangay</th>
             <th>Linked Patient</th>
             <th>Age</th>
             <th>Sex</th>
             <th>Status</th>
-            <th></th>
+            <th style="width:140px; min-width:120px;">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="contacts-table-body">
         <?php foreach ($rows as $c): ?>
           <tr>
-            <td><?=htmlspecialchars($c['contact_code'])?></td>
-            <td><?=$c['patient_code']?></td>
-            <td><?=htmlspecialchars($c['barangay'])?></td>
-            <td>
-              <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?=$c['patient_id']?>"
-                class="btn btn-sm btn-link">
-                <?= htmlspecialchars($c['patient_code']) ?>
-              </a>
+            <td class="text-center"><?=htmlspecialchars($c['contact_code'])?></td>
+            <td class="text-center"><?=htmlspecialchars($c['barangay'])?></td>
+            <td class="text-center">
+              <?php if (!empty($c['patient_id'])): ?>
+                <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?=$c['patient_id']?>"
+                  class="btn btn-sm btn-link">
+                  <?= htmlspecialchars($c['patient_code']) ?>
+                </a>
+              <?php else: ?>
+                <em class="text-muted small">None</em>
+              <?php endif; ?>
             </td>
-            <td><?=$c['age']?></td>
-            <td><?=$c['sex']?></td>
-            <td><?=$c['status']?></td>
-            <td>
+            <td class="text-center"><?=$c['age']?></td>
+            <td class="text-center"><?=$c['sex']?></td>
+            <td class="text-center"><?=$c['status']?></td>
+            <td class="text-center">
               <?php if ($c['status'] !== 'converted_patient'): ?>
                 <a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/convert&id=<?=$c['contact_id']?>" class="btn btn-sm btn-outline-warning">Convert</a>
               <?php endif; ?>

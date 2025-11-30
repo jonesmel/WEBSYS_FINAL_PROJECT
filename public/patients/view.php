@@ -25,6 +25,15 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
       <div class="col-md-3"><strong>Contact No:</strong><br><?=htmlspecialchars($patient['contact_number'])?></div>
     </div>
 
+    <div class="mb-3">
+      <strong>PhilHealth ID:</strong><br>
+      <?php if (!empty($patient['philhealth_id'])): ?>
+        <?= htmlspecialchars(substr($patient['philhealth_id'], 0, 2) . '-' . substr($patient['philhealth_id'], 2, 9) . '-' . substr($patient['philhealth_id'], 11, 1)) ?>
+      <?php else: ?>
+        Not provided
+      <?php endif; ?>
+    </div>
+
     <div class="row mb-3">
       <div class="col-md-3"><strong>TB Case #:</strong><br><?=htmlspecialchars($patient['tb_case_number'])?></div>
       <div class="col-md-3"><strong>Bacteriology:</strong><br><?=$patient['bacteriological_status']?></div>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/UserModel.php';
+require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class AjaxController {
@@ -106,6 +107,8 @@ class AjaxController {
 
         $q = trim($_GET['q'] ?? '');
         $barangay = trim($_GET['barangay'] ?? '');
+        $userRole = $_SESSION['user']['role'] ?? null;
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
         $sql = "
             SELECT p.*,
@@ -116,12 +119,29 @@ class AjaxController {
         ";
         $params = [];
 
+        // Auto-filter by health worker's assigned barangay
+        if ($userRole === 'health_worker' && $userBarangay !== '') {
+            $sql .= " AND p.barangay = ?";
+            $params[] = $userBarangay;
+        }
+
         if ($q !== '') {
-            // search patient_code OR tb_case_number
-            $sql .= " AND (p.patient_code LIKE ? OR p.tb_case_number LIKE ?)";
+            // search patient_code, tb_case_number, philhealth_id, age, sex, and barangay
+            $sql .= " AND (
+                p.patient_code LIKE ? OR
+                p.tb_case_number LIKE ? OR
+                p.philhealth_id LIKE ? OR
+                CAST(p.age AS CHAR) LIKE ? OR
+                LOWER(p.sex) LIKE ? OR
+                LOWER(p.barangay) LIKE ?
+            )";
             $like = "%$q%";
             $params[] = $like;
             $params[] = $like;
+            $params[] = $like; // philhealth_id search
+            $params[] = $like;
+            $params[] = strtolower($like); // sex search case-insensitive
+            $params[] = strtolower($like); // barangay search case-insensitive
         }
 
         if ($barangay !== '') {
@@ -145,10 +165,398 @@ class AjaxController {
                 'age' => $r['age'],
                 'sex' => $r['sex'],
                 'tb_case_number' => $r['tb_case_number'],
+                'philhealth_id' => $r['philhealth_id'] ?? null,
                 'has_user' => ($r['has_user'] ? 1 : 0)
             ];
         }, $rows);
 
         echo json_encode($out);
+    }
+
+    public function fetch_contacts() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+
+        $sql = "
+            SELECT c.*, p.patient_code, p.barangay AS patient_barangay
+            FROM contacts c
+            LEFT JOIN patients p ON p.patient_id = c.patient_id
+            WHERE c.is_archived = 0
+        ";
+        $params = [];
+
+        if ($q !== '') {
+            // search contact_code, patient_code, relationship, contact_number, and date fields
+            $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ? OR c.contact_number LIKE ? OR DATE_FORMAT(c.created_at, '%Y-%m-%d') LIKE ?)";
+            $like = "%$q%";
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND c.barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        $sql .= " ORDER BY c.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        // normalize output
+        $out = array_map(function($r){
+            return [
+                'contact_id' => $r['contact_id'],
+                'contact_code' => $r['contact_code'],
+                'patient_id' => $r['patient_id'] ?? null,
+                'patient_code' => $r['patient_code'] ?? '',
+                'patient_barangay' => $r['patient_barangay'] ?? '',
+                'age' => $r['age'],
+                'sex' => $r['sex'],
+                'relationship' => $r['relationship'],
+                'contact_number' => $r['contact_number'],
+                'barangay' => $r['barangay'],
+                'screening_result' => $r['screening_result'],
+                'status' => $r['status'],
+                'created_at' => $r['created_at']
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_medications() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+        $userRole = $_SESSION['user']['role'] ?? null;
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
+
+        $sql = "
+            SELECT m.*, p.patient_code
+            FROM medications m
+            LEFT JOIN patients p ON p.patient_id = m.patient_id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        // Auto-filter by health worker's assigned barangay
+        if ($userRole === 'health_worker' && $userBarangay !== '') {
+            $sql .= " AND p.barangay = ?";
+            $params[] = $userBarangay;
+        }
+
+        if ($q !== '') {
+            // search drugs, notes, patient_code, start_date, end_date for health workers
+            if ($userRole === 'health_worker') {
+                // Health workers only search within their AOR (patient_code restricted by above filter)
+                $sql .= " AND (
+                    m.drugs LIKE ? OR m.notes LIKE ? OR
+                    DATE_FORMAT(m.start_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(m.end_date, '%Y-%m-%d') LIKE ?
+                )";
+                $like = "%$q%";
+                $params = array_merge($params, [$like, $like, $like, $like]);
+            } else {
+                // Super admin can search patient_code too
+                $sql .= " AND (
+                    m.drugs LIKE ? OR m.notes LIKE ? OR p.patient_code LIKE ? OR
+                    DATE_FORMAT(m.start_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(m.end_date, '%Y-%m-%d') LIKE ?
+                )";
+                $like = "%$q%";
+                $params = array_merge($params, [$like, $like, $like, $like, $like]);
+            }
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND p.barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        $sql .= " ORDER BY m.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        // normalize output
+        $out = array_map(function($r){
+            return [
+                'medication_id' => $r['medication_id'] ?? $r['id'],
+                'patient_code' => $r['patient_code'],
+                'drugs' => $r['drugs'] ?? $r['regimen'] ?? '',
+                'start_date' => $r['start_date'],
+                'end_date' => $r['end_date'],
+                'notes' => $r['notes'],
+                'created_at' => $r['created_at']
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_referrals() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+        $referring_barangay = trim($_GET['referring_barangay'] ?? '');
+
+        $sql = "
+            SELECT r.*, p.patient_code
+            FROM referrals r
+            LEFT JOIN patients p ON p.patient_id = r.patient_id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if ($q !== '') {
+            // broad search: code, patient_code, details, dates, status
+            $sql .= " AND (
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
+                r.referral_status LIKE ?
+            )";
+            $like = "%$q%";
+            $params = [$like, $like, $like, $like, $like, $like, $like];
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND r.receiving_barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        if ($referring_barangay !== '') {
+            $sql .= " AND r.referring_unit LIKE ?";
+            $params[] = "%$referring_barangay%";
+        }
+
+        $sql .= " ORDER BY r.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        // normalize output
+        $out = array_map(function($r){
+            return [
+                'referral_id' => $r['referral_id'],
+                'referral_code' => $r['referral_code'],
+                'patient_code' => $r['patient_code'],
+                'referral_date' => $r['referral_date'],
+                'referring_unit' => $r['referring_unit'],
+                'referring_tel' => $r['referring_tel'],
+                'referring_email' => $r['referring_email'],
+                'receiving_barangay' => $r['receiving_barangay'],
+                'referral_status' => $r['referral_status'] ?? 'pending'
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_sent_referrals() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+        $userId = $_SESSION['user']['user_id'] ?? null;
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
+
+        $sql = "
+            SELECT r.*, p.patient_code
+            FROM referrals r
+            LEFT JOIN patients p ON p.patient_id = r.patient_id
+            WHERE r.created_by = ?
+        ";
+        $params = [$userId];
+
+        if ($q !== '') {
+            $sql .= " AND (
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
+                r.referral_status LIKE ?
+            )";
+            $like = "%$q%";
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND r.receiving_barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        $sql .= " ORDER BY r.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        $out = array_map(function($r){
+            return [
+                'referral_id' => $r['referral_id'],
+                'referral_code' => $r['referral_code'],
+                'patient_code' => $r['patient_code'],
+                'referral_date' => $r['referral_date'],
+                'referring_unit' => $r['referring_unit'],
+                'referring_tel' => $r['referring_tel'],
+                'referring_email' => $r['referring_email'],
+                'receiving_barangay' => $r['receiving_barangay'],
+                'referral_status' => $r['referral_status'] ?? 'pending'
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_incoming_referrals() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
+
+        $sql = "
+            SELECT r.*, p.patient_code
+            FROM referrals r
+            LEFT JOIN patients p ON p.patient_id = r.patient_id
+            WHERE r.receiving_barangay = ? AND r.referral_status = 'pending'
+        ";
+        $params = [$userBarangay];
+
+        if ($q !== '') {
+            $sql .= " AND (
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
+                r.referral_status LIKE ?
+            )";
+            $like = "%$q%";
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND r.receiving_barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        $sql .= " ORDER BY r.referral_date DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        $out = array_map(function($r){
+            return [
+                'referral_id' => $r['referral_id'],
+                'referral_code' => $r['referral_code'],
+                'patient_code' => $r['patient_code'],
+                'referral_date' => $r['referral_date'],
+                'referring_unit' => $r['referring_unit'],
+                'referring_tel' => $r['referring_tel'],
+                'referring_email' => $r['referring_email'],
+                'receiving_barangay' => $r['receiving_barangay'],
+                'referral_status' => $r['referral_status']
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_received_referrals() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $q = trim($_GET['q'] ?? '');
+        $barangay = trim($_GET['barangay'] ?? '');
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
+
+        $sql = "
+            SELECT r.*, p.patient_code
+            FROM referrals r
+            LEFT JOIN patients p ON p.patient_id = r.patient_id
+            WHERE r.receiving_barangay = ? AND r.referral_status = 'received'
+        ";
+        $params = [$userBarangay];
+
+        if ($q !== '') {
+            $sql .= " AND (
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
+                r.referral_status LIKE ?
+            )";
+            $like = "%$q%";
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+        }
+
+        if ($barangay !== '') {
+            $sql .= " AND r.receiving_barangay LIKE ?";
+            $params[] = "%$barangay%";
+        }
+
+        $sql .= " ORDER BY r.date_received DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+
+        $out = array_map(function($r){
+            return [
+                'referral_id' => $r['referral_id'],
+                'referral_code' => $r['referral_code'],
+                'patient_code' => $r['patient_code'],
+                'referral_date' => $r['referral_date'],
+                'referring_unit' => $r['referring_unit'],
+                'referring_tel' => $r['referring_tel'],
+                'referring_email' => $r['referring_email'],
+                'receiving_barangay' => $r['receiving_barangay'],
+                'referral_status' => $r['referral_status']
+            ];
+        }, $rows);
+
+        echo json_encode($out);
+    }
+
+    public function fetch_audit_logs() {
+        header("Content-Type: application/json");
+        $pdo = getDB();
+
+        $filters = [];
+
+        if (!empty($_GET['user_id'])) $filters['user_id'] = $_GET['user_id'];
+        if (!empty($_GET['action']))  $filters['action'] = $_GET['action'];
+        if (!empty($_GET['table_name'])) $filters['table_name'] = $_GET['table_name'];
+        if (!empty($_GET['from']))    $filters['from'] = $_GET['from'];
+        if (!empty($_GET['to']))      $filters['to'] = $_GET['to'];
+
+        $rows = LogModel::getLogs($filters);
+
+        echo json_encode($rows);
+    }
+
+    public function check_current_password() {
+        header('Content-Type: application/json');
+        $current = $_POST['current_password'] ?? '';
+        $user_id = $_SESSION['user']['user_id'] ?? null;
+        if (!$user_id) {
+            echo json_encode(['valid' => false, 'message' => 'Not logged in']);
+            return;
+        }
+    $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $hashed = $stmt->fetchColumn();
+        $valid = password_verify($current, $hashed);
+        echo json_encode(['valid' => $valid, 'message' => $valid ? 'Password correct' : 'Current password is incorrect']);
     }
 }

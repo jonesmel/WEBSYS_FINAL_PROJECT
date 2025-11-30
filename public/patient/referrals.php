@@ -25,25 +25,25 @@ $refs = ReferralModel::getByPatient($pid);
 
   <div class="card shadow-sm p-4">
     <div class="table-responsive">
-      <table class="table table-bordered align-middle">
+      <table class="table table-striped table-bordered align-middle">
         <thead>
-          <tr>
+          <tr style="text-align: center;">
             <th>Referral Code</th>
             <th>Date</th>
             <th>Referring Barangay</th>
             <th>Status</th>
-            <th width="150">Actions</th>
+            <th style="width:140px; min-width:120px;">Actions</th>
           </tr>
         </thead>
         <tbody>
         <?php if ($refs): foreach ($refs as $r): ?>
           <tr>
-            <td><?= htmlspecialchars($r['referral_code']) ?></td>
-            <td><?= htmlspecialchars($r['referral_date']) ?></td>
-            <td><?= htmlspecialchars($r['referring_unit']) ?></td>
-            <td><?= ucfirst($r['referral_status'] ?? 'pending') ?></td>
+            <td class="text-center"><?= htmlspecialchars($r['referral_code']) ?></td>
+            <td class="text-center"><?= htmlspecialchars($r['referral_date']) ?></td>
+            <td class="text-center"><?= htmlspecialchars($r['referring_unit']) ?></td>
+            <td class="text-center"><?= ucfirst($r['referral_status'] ?? 'pending') ?></td>
 
-            <td>
+            <td class="text-center">
               <a target="_blank"
                  href="/WEBSYS_FINAL_PROJECT/public/?route=referral/print&id=<?= $r['referral_id'] ?>"
                  class="btn btn-sm btn-outline-primary">

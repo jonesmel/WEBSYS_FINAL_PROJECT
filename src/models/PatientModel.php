@@ -8,12 +8,12 @@ class PatientModel {
       $year = date("Y");
       $prefix = "PAT-$year-";
 
-      // Get last code of this year
+      // Get highest numbered code for this year (not just last inserted)
       $stmt = $pdo->prepare("
-          SELECT patient_code 
-          FROM patients 
-          WHERE patient_code LIKE ? 
-          ORDER BY patient_id DESC 
+          SELECT patient_code
+          FROM patients
+          WHERE patient_code LIKE ?
+          ORDER BY CAST(SUBSTRING_INDEX(patient_code, '-', -1) AS UNSIGNED) DESC
           LIMIT 1
       ");
       $stmt->execute([$prefix . "%"]);
@@ -36,10 +36,10 @@ class PatientModel {
       $prefix = "TBCASE-$year-";
 
       $stmt = $pdo->prepare("
-          SELECT tb_case_number 
-          FROM patients 
-          WHERE tb_case_number LIKE ? 
-          ORDER BY patient_id DESC 
+          SELECT tb_case_number
+          FROM patients
+          WHERE tb_case_number LIKE ?
+          ORDER BY CAST(SUBSTRING_INDEX(tb_case_number, '-', -1) AS UNSIGNED) DESC
           LIMIT 1
       ");
       $stmt->execute([$prefix . "%"]);
@@ -70,11 +70,11 @@ class PatientModel {
       }
 
       $sql = "INSERT INTO patients (
-                patient_code, age, sex, barangay, contact_number, 
-                tb_case_number, bacteriological_status, anatomical_site, 
+                patient_code, age, sex, barangay, contact_number, philhealth_id,
+                tb_case_number, bacteriological_status, anatomical_site,
                 drug_susceptibility, treatment_history, created_by, user_id
               )
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       $stmt = $pdo->prepare($sql);
 
@@ -84,6 +84,7 @@ class PatientModel {
         $data['sex'] ?? 'Unknown',
         $data['barangay'],
         $data['contact_number'] ?? null,
+        $data['philhealth_id'] ?? null,
         $data['tb_case_number'],
         $data['bacteriological_status'] ?? 'Unknown',
         $data['anatomical_site'] ?? 'Unknown',
@@ -128,10 +129,11 @@ class PatientModel {
       $params = [];
 
       if (!empty($q)) {
-          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ?) ";
+          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
           $like = '%' . $q . '%';
           $params[] = $like;
           $params[] = $like;
+          $params[] = $like; // philhealth_id search
       }
       if (!empty($barangay)) {
           $sql .= "AND barangay = ? ";
@@ -152,9 +154,10 @@ class PatientModel {
 
       if (!empty($q)) {
           $like = '%' . $q . '%';
-          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ?) ";
+          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
           $params[] = $like;
           $params[] = $like;
+          $params[] = $like; // philhealth_id search
       }
 
       $sql .= "ORDER BY created_at DESC";
@@ -172,9 +175,9 @@ class PatientModel {
   public static function update($id, $data) {
       $pdo = getDB();
       $sql = "UPDATE patients SET
-                age=?, sex=?, barangay=?, contact_number=?, tb_case_number=?,
-                bacteriological_status=?, anatomical_site=?, drug_susceptibility=?, 
-                treatment_history=?
+                age=?, sex=?, barangay=?, contact_number=?, philhealth_id=?,
+                tb_case_number=?, bacteriological_status=?, anatomical_site=?,
+                drug_susceptibility=?, treatment_history=?
               WHERE patient_id=?";
 
       return $pdo->prepare($sql)->execute([
@@ -182,6 +185,7 @@ class PatientModel {
         $data['sex'] ?? 'Unknown',
         $data['barangay'],
         $data['contact_number'] ?? null,
+        $data['philhealth_id'] ?? null,
         $data['tb_case_number'],
         $data['bacteriological_status'] ?? 'Unknown',
         $data['anatomical_site'] ?? 'Unknown',

@@ -20,13 +20,17 @@ $patients = PatientModel::getAll();
     <form method="POST" action="/WEBSYS_FINAL_PROJECT/public/?route=medication/edit&id=<?=$id?>">
       <div class="mb-3">
         <label class="form-label">Patient</label>
-        <select name="patient_id" class="form-select" required>
-          <?php foreach ($patients as $p): ?>
-            <option value="<?=$p['patient_id']?>" <?= $p['patient_id'] == $med['patient_id'] ? 'selected' : '' ?>>
-              <?=$p['patient_code']?> (<?=$p['barangay']?>)
-            </option>
-          <?php endforeach; ?>
-        </select>
+        <?php
+        $patientInfo = '';
+        foreach ($patients as $p) {
+          if ($p['patient_id'] == $med['patient_id']) {
+            $patientInfo = $p['patient_code'] . ' (' . $p['barangay'] . ')';
+            break;
+          }
+        }
+        ?>
+        <input type="text" class="form-control" value="<?=$patientInfo?>" disabled readonly>
+        <input type="hidden" name="patient_id" value="<?=$med['patient_id']?>">
       </div>
 
       <?php 

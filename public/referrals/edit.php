@@ -20,17 +20,20 @@ if (!isset($ref)) {
     <form method="POST"
           action="/WEBSYS_FINAL_PROJECT/public/?route=referral/edit&id=<?= $ref['referral_id'] ?>">
 
-      <!-- PATIENT -->
+      <!-- PATIENT (READONLY) -->
       <div class="mb-3">
         <label class="form-label">Patient</label>
-        <select name="patient_id" class="form-select" required>
-          <?php foreach ($patients as $p): ?>
-            <option value="<?= $p['patient_id'] ?>"
-              <?= ($p['patient_id'] == $ref['patient_id'] ? 'selected' : '') ?>>
-              <?= htmlspecialchars($p['patient_code']) ?> (<?= htmlspecialchars($p['barangay']) ?>)
-            </option>
-          <?php endforeach; ?>
-        </select>
+        <?php
+        $patientInfo = '';
+        foreach ($patients as $p) {
+          if ($p['patient_id'] == $ref['patient_id']) {
+            $patientInfo = htmlspecialchars($p['patient_code']) . ' (' . htmlspecialchars($p['barangay']) . ')';
+            break;
+          }
+        }
+        ?>
+        <input type="text" class="form-control" value="<?=$patientInfo?>" disabled readonly>
+        <input type="hidden" name="patient_id" value="<?=$ref['patient_id']?>">
       </div>
 
       <!-- DATE + RECEIVING BARANGAY -->

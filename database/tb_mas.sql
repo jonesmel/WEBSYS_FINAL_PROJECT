@@ -129,6 +129,7 @@ CREATE TABLE `patients` (
   `sex` enum('M','F','Unknown') DEFAULT 'Unknown',
   `barangay` varchar(100) NOT NULL,
   `contact_number` varchar(50) DEFAULT NULL,
+  `philhealth_id` varchar(14) DEFAULT NULL,
   `tb_case_number` varchar(80) DEFAULT NULL,
   `bacteriological_status` enum('BC','CD','Unknown') DEFAULT 'Unknown',
   `anatomical_site` enum('P','EP','Unknown') DEFAULT 'Unknown',

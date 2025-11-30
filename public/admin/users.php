@@ -51,30 +51,46 @@ $barangays = BarangayHelper::getAll();
 <div class="container py-4">
   <h3 class="mb-4">Patient User Management</h3>
 
-  <!-- AJAX Filter Form -->
-  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/" data-ajax="patient_users">
-    <input type="hidden" name="route" value="admin/users">
+  <!-- Search Boxes -->
+  <form class="d-flex justify-content-end mb-3"
+        method="GET"
+        action="/WEBSYS_FINAL_PROJECT/public/"
+        data-ajax="patient_users">
 
-    <div class="col-md-4">
-      <input name="q" value="<?= htmlspecialchars($q) ?>" class="form-control" placeholder="Search email or patient code">
-    </div>
+      <input type="hidden" name="route" value="admin/users">
 
-    <div class="col-md-3">
-      <select name="barangay" class="form-select">
-        <option value="">-- Barangay --</option>
-        <?php foreach ($barangays as $b): ?>
-          <option value="<?= htmlspecialchars($b) ?>" <?= ($b === $barangay) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($b) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+      <div class="d-flex gap-2 align-items-end" style="max-width: 900px;">
 
-    <div class="col-md-2"><button class="btn btn-primary">Filter</button></div>
+          <!-- Search All Fields -->
+          <div class="d-flex flex-column" style="width: 250px;">
+              <label class="form-label mb-1">Search All Fields</label>
+              <input name="q"
+                    value="<?= htmlspecialchars($q) ?>"
+                    class="form-control"
+                    placeholder="Search...">
+          </div>
 
-    <div class="col-md-3 text-end">
-      <a href="/WEBSYS_FINAL_PROJECT/public/?route=admin/users" class="btn btn-secondary">Reset</a>
-    </div>
+          <!-- Barangay Filter -->
+          <div class="d-flex flex-column" style="width: 250px;">
+              <label class="form-label mb-1">Filter by Barangay</label>
+              <select name="barangay" class="form-select">
+                  <option value="">All Barangays</option>
+                  <?php foreach ($barangays as $b): ?>
+                      <option value="<?= htmlspecialchars($b) ?>"
+                          <?= ($b === $barangay) ? 'selected' : '' ?>>
+                          <?= htmlspecialchars($b) ?>
+                      </option>
+                  <?php endforeach; ?>
+              </select>
+          </div>
+
+          <!-- Clear Button -->
+        <button type="button" class="btn btn-secondary search-clear-btn"
+                onclick="clearFilters(this.closest('form'))">
+          Clear
+        </button>
+
+      </div>
   </form>
 
   <?php if (!empty($_SESSION['flash_message'])): ?>
@@ -122,29 +138,29 @@ $barangays = BarangayHelper::getAll();
     <div class="table-responsive mt-3">
       <table class="table table-bordered table-striped align-middle">
         <thead class="table-light">
-          <tr>
+          <tr style="text-align: center;">
             <th>Email</th>
             <th>Verified?</th>
             <th>Assigned Patient Code</th>
             <th>Patient Barangay</th>
-            <th width="90"></th>
+            <th style="width:140px; min-width:120px;">Actions</th>
           </tr>
         </thead>
 
         <tbody class="patient-table-body">
         <?php foreach ($patientUsers as $u): ?>
           <tr>
-            <td><?= htmlspecialchars($u['email']) ?></td>
-            <td><?= $u['is_verified']
+            <td class="text-center"><?= htmlspecialchars($u['email']) ?></td>
+            <td class="text-center"><?= $u['is_verified']
                   ? '<span class="badge bg-success">Yes</span>'
                   : '<span class="badge bg-warning text-dark">No</span>' ?>
             </td>
-            <td><?= htmlspecialchars($u['patient_code']) ?></td>
-            <td><?= htmlspecialchars($u['patient_barangay']) ?></td>
-            <td>
+            <td class="text-center"><?= htmlspecialchars($u['patient_code']) ?></td>
+            <td class="text-center"><?= htmlspecialchars($u['patient_barangay']) ?></td>
+            <td class="text-center">
               <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/delete_user&id=<?= $u['user_id'] ?>"
                 onclick="return confirm('Delete this user?');"
-                class="btn btn-danger btn-sm w-100">Delete</a>
+                class="btn btn-danger btn-sm">Delete</a>
             </td>
           </tr>
         <?php endforeach; ?>

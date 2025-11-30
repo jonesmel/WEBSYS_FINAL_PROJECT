@@ -81,6 +81,12 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
       </div>
 
       <div class="mb-3">
+        <label class="form-label">PhilHealth ID</label>
+        <input name="philhealth_id" class="form-control" placeholder="12-digit PhilHealth number"
+               value="<?= htmlspecialchars($patient['philhealth_id'] ?? '') ?>">
+      </div>
+
+      <div class="mb-3">
         <label class="form-label">Bacteriological Status</label>
         <select name="bacteriological_status" class="form-select">
           <option <?= $patient['bacteriological_status']=='Unknown'?'selected':'' ?>>Unknown</option>

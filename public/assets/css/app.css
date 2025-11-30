@@ -121,14 +121,49 @@ body {
 }
 
 /* Tables */
-.table thead {
-    background: var(--accent-green) !important;
-    color: var(--text-light) !important;
+.table {
+    --bs-table-striped-bg: rgba(46, 106, 71, 0.05) !important; /* Very subtle green alternating rows */
+    --bs-table-striped-color: var(--text-dark) !important;
+    margin-bottom: 0; /* Remove default margin for better spacing */
 }
 
-.table td, 
+.table thead {
+    background: var(--primary-green) !important;
+    color: var(--text-light) !important;
+    border-bottom: 2px solid var(--pine-green) !important; /* Stronger header separation */
+}
+
+.table thead th {
+    border-bottom: none !important; /* Remove double borders */
+    font-weight: 600 !important; /* Bold header text */
+    padding: 12px 8px !important; /* Slightly more padding */
+}
+
+.table tbody tr:nth-child(odd) {
+    background-color: rgba(244, 244, 244, 0.6) !important; /* Light gray for odd rows */
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--text-light) !important; /* Pure white for even rows */
+}
+
+.table tbody tr:hover {
+    background-color: rgba(129, 166, 132, 0.08) !important; /* Subtle green hover effect */
+    transition: background-color 0.15s ease-in-out;
+}
+
+.table td,
 .table th {
-    vertical-align: middle;
+    vertical-align: middle !important;
+    border-color: rgba(46, 106, 71, 0.1) !important; /* Subtle green border */
+}
+
+.table-striped > tbody > tr:nth-child(2n+1) > * {
+    color: var(--text-dark) !important;
+}
+
+.table-striped > tbody > tr:nth-child(2n) > * {
+    color: var(--text-dark) !important;
 }
 
 /* Badges */
@@ -168,8 +203,129 @@ body {
     color: var(--text-light) !important;
 }
 
+/* Animations */
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.clear-x:hover {
+    color: #000;
+}
+
 /* Footer */
 footer {
     background: var(--bg-alt) !important;
     color: var(--text-dark) !important;
+}
+
+/* Audit logs beautification */
+.audit-changes {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.audit-import-summary {
+    font-size: 0.9rem;
+    color: var(--primary-green);
+    margin: 0.25rem 0;
+}
+
+.audit-import-summary strong {
+    font-weight: 600;
+}
+
+.audit-changes .audit-change {
+    margin-bottom: 0.375rem;
+    padding: 0.125rem 0;
+}
+
+.audit-changes .audit-change strong {
+    color: var(--primary-green);
+    font-weight: 600;
+    margin-right: 0.375rem;
+    font-size: 0.8rem;
+}
+
+.audit-changes .old-value {
+    color: var(--tb-red);
+    font-weight: 500;
+}
+
+.audit-changes .new-value {
+    color: var(--primary-green);
+    font-weight: 500;
+}
+
+/* Legacy audit data styles */
+.audit-data {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.audit-data .audit-field {
+    margin-bottom: 0.25rem;
+    padding: 0.125rem 0;
+}
+
+.audit-data .audit-field strong {
+    color: var(--primary-green);
+    font-weight: 600;
+    margin-right: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.audit-data .audit-field span {
+    color: var(--text-dark);
+}
+
+/* Force AJAX barangay search input to match Bootstrap .form-control exactly */
+.brgy-search-input {
+    height: 38px !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+/* Force wrapper to not push down */
+.position-relative {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+}
+
+/* Button alignment fix */
+.search-clear-btn {
+    height: 38px !important; /* match form-control */
+    padding: 6px 16px !important;
+    align-self: flex-end !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Forceful audit logs centering - Text alignment only (no flex) */
+.audit-cell-center {
+    text-align: center !important;
+}
+
+/* Force all table cells in audit logs table body to center */
+.audit-logs-table-body td {
+    text-align: center !important;
 }

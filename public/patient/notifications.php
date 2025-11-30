@@ -9,6 +9,9 @@ VerifyEmailMiddleware::enforce();
 
 $uid = $_SESSION['user']['user_id'];
 $rows = NotificationModel::getByUser($uid);
+
+// Mark all notifications as read for the patient when they view the page
+NotificationModel::markAllReadForUser($uid);
 ?>
 
 <div class="container py-4">
@@ -16,22 +19,22 @@ $rows = NotificationModel::getByUser($uid);
 
   <div class="card shadow-sm p-4">
     <div class="table-responsive">
-      <table class="table table-bordered align-middle">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Message</th>
-            <th>Date</th>
-            <th>Status</th>
+      <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+          <tr style="text-align: center;">
+            <th style="width:200px; min-width:150px;">Title</th>
+            <th style="width:400px; min-width:300px;">Message</th>
+            <th style="width:150px; min-width:120px;">Date</th>
+            <th style="width:100px; min-width:80px;">Status</th>
           </tr>
         </thead>
         <tbody>
         <?php if ($rows): foreach ($rows as $n): ?>
           <tr>
-            <td><?=htmlspecialchars($n['title'])?></td>
-            <td><?=nl2br(htmlspecialchars($n['message']))?></td>
-            <td><?=htmlspecialchars($n['created_at'])?></td>
-            <td>
+            <td class="text-center fw-bold text-primary"><?=htmlspecialchars($n['title'])?></td>
+            <td class="text-start"><?=nl2br(htmlspecialchars($n['message']))?></td>
+            <td class="text-center"><?=htmlspecialchars($n['created_at'])?></td>
+            <td class="text-center">
               <?= $n['is_read'] ? '<span class="badge bg-success">Read</span>' : '<span class="badge bg-warning text-dark">Unread</span>' ?>
             </td>
           </tr>

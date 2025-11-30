@@ -21,11 +21,24 @@ class MedicationModel {
   public static function getAll() {
     $pdo = getDB();
     $stmt = $pdo->query("
-        SELECT m.*, p.patient_code 
+        SELECT m.*, p.patient_code
         FROM medications m
         LEFT JOIN patients p ON p.patient_id = m.patient_id
         ORDER BY m.created_at DESC
     ");
+    return $stmt->fetchAll();
+  }
+
+  public static function getByBarangay($barangay) {
+    $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT m.*, p.patient_code
+        FROM medications m
+        LEFT JOIN patients p ON p.patient_id = m.patient_id
+        WHERE p.barangay = ?
+        ORDER BY m.created_at DESC
+    ");
+    $stmt->execute([$barangay]);
     return $stmt->fetchAll();
   }
 

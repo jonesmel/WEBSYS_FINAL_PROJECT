@@ -31,8 +31,13 @@ class LogModel {
     }
 
     if (!empty($filters['action'])) {
-      $query .= " AND action = ?";
-      $params[] = $filters['action'];
+      $query .= " AND action LIKE ?";
+      $params[] = '%' . $filters['action'] . '%';
+    }
+
+    if (!empty($filters['table_name'])) {
+      $query .= " AND table_name = ?";
+      $params[] = $filters['table_name'];
     }
 
     if (!empty($filters['from'])) {

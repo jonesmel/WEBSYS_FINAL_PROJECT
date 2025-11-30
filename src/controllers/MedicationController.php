@@ -11,7 +11,18 @@ class MedicationController {
 
     public function list() {
         AuthMiddleware::requireRole(['super_admin', 'health_worker']);
-        $rows = MedicationModel::getAll();
+
+        $userRole = $_SESSION['user']['role'] ?? null;
+        $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
+
+        if ($userRole === 'health_worker' && $userBarangay !== '') {
+            // Health workers only see medications for patients in their barangay
+            $rows = MedicationModel::getByBarangay($userBarangay);
+        } else {
+            // Super admin sees all
+            $rows = MedicationModel::getAll();
+        }
+
         include __DIR__ . '/../../public/medications/list.php';
     }
 

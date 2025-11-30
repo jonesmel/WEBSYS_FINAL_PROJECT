@@ -35,32 +35,42 @@ $barangays = BarangayHelper::getAll();
 <div class="container py-4">
   <h3 class="mb-4">Health Worker User Management</h3>
 
-  <!-- Filter Form (AJAX enabled via data-ajax attr) -->
-  <form class="row g-2 mb-3" method="GET" action="/WEBSYS_FINAL_PROJECT/public/" data-ajax="health_workers">
-    <input type="hidden" name="route" value="user/create_health_worker">
+  <!-- Search Boxes -->
+  <form class="d-flex justify-content-end mb-3" 
+        method="GET" 
+        action="/WEBSYS_FINAL_PROJECT/public/" 
+        data-ajax="health_workers">
 
-    <div class="col-md-4">
-      <input name="q" value="<?= htmlspecialchars($q) ?>" class="form-control" placeholder="Search email" type="search">
-    </div>
+      <input type="hidden" name="route" value="user/create_health_worker">
 
-    <div class="col-md-3">
-      <select name="barangay" class="form-select">
-        <option value="">-- Barangay --</option>
-        <?php foreach ($barangays as $b): ?>
-          <option value="<?= htmlspecialchars($b) ?>" <?= ($b === $barangay) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($b) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+      <div class="d-flex gap-2" style="max-width: 900px;">
+        
+        <!-- Search All -->
+        <div class="d-flex flex-column" style="width: 250px;">
+          <label class="form-label mb-1">Search All Fields</label>
+          <input name="q" value="<?= htmlspecialchars($q) ?>" class="form-control" placeholder="Search...">
+        </div>
 
-    <div class="col-md-2">
-      <button class="btn btn-primary" type="submit">Filter</button>
-    </div>
+        <!-- Barangay (AJAX dropdown replaces select) -->
+        <div class="d-flex flex-column" style="width: 250px;">
+          <label class="form-label mb-1">Filter by Barangay</label>
+          <select name="barangay" class="form-select">
+            <option value="">All Barangays</option>
+            <?php foreach ($barangays as $b): ?>
+              <option value="<?= htmlspecialchars($b) ?>" <?= ($b === $barangay) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($b) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
 
-    <div class="col-md-3 text-end">
-      <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/create_health_worker" class="btn btn-secondary">Reset</a>
-    </div>
+        <!-- Clear Button -->
+        <button type="button" class="btn btn-secondary search-clear-btn"
+                onclick="clearFilters(this.closest('form'))">
+          Clear
+        </button>
+
+      </div>
   </form>
 
   <!-- CREATE HEALTH WORKER -->
@@ -97,27 +107,27 @@ $barangays = BarangayHelper::getAll();
     <div class="table-responsive mt-3">
       <table class="table table-bordered table-striped align-middle">
         <thead class="table-light">
-          <tr>
+          <tr style="text-align: center;">
             <th>Email</th>
             <th>Verified?</th>
             <th>Assigned Barangay</th>
-            <th width="90"></th>
+            <th style="width:140px; min-width:120px;">Actions</th>
           </tr>
         </thead>
 
         <tbody class="hw-table-body">
         <?php if ($healthWorkers): foreach ($healthWorkers as $hw): ?>
           <tr>
-            <td><?= htmlspecialchars($hw['email']) ?></td>
-            <td><?= $hw['is_verified']
+            <td class="text-center"><?= htmlspecialchars($hw['email']) ?></td>
+            <td class="text-center"><?= $hw['is_verified']
                   ? '<span class="badge bg-success">Yes</span>'
                   : '<span class="badge bg-warning text-dark">No</span>' ?>
             </td>
-            <td><?= htmlspecialchars($hw['barangay_assigned']) ?></td>
-            <td>
+            <td class="text-center"><?= htmlspecialchars($hw['barangay_assigned']) ?></td>
+            <td class="text-center">
               <a href="/WEBSYS_FINAL_PROJECT/public/?route=user/delete_user&id=<?= $hw['user_id'] ?>"
                 onclick="return confirm('Delete this user?');"
-                class="btn btn-danger btn-sm w-100">Delete</a>
+                class="btn btn-danger btn-sm">Delete</a>
             </td>
           </tr>
         <?php endforeach; else: ?>

@@ -56,6 +56,11 @@ $barangays = BarangayHelper::getAll();
         <input type="text" name="contact_number" class="form-control">
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">PhilHealth ID</label>
+        <input type="text" name="philhealth_id" class="form-control" placeholder="12-digit PhilHealth number">
+      </div>
+
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Bacteriological Status</label>

@@ -52,7 +52,7 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">Records</a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list">Contacts</a></li>
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list">Contact Tracing</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index">Referrals</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
               </ul>
@@ -128,9 +128,7 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
             </ul>
           </li>
 
-          <li class="nav-item">
-            <span class="nav-link disabled text-light">Logged in as: <?= htmlspecialchars($user['role']) ?></span>
-          </li>
+
           <li class="nav-item">
             <a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=auth/logout">Logout</a>
           </li>

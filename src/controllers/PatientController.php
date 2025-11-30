@@ -38,6 +38,17 @@ class PatientController {
                 $data['barangay'] = $user['barangay_assigned'];
             }
 
+            // Validate PhilHealth ID if provided
+            if (!empty($data['philhealth_id'])) {
+                $philhealthClean = preg_replace('/[^0-9]/', '', $data['philhealth_id']);
+                if (strlen($philhealthClean) !== 12) {
+                    Flash::set('danger', 'PhilHealth ID must be exactly 12 digits');
+                    header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/create");
+                    exit;
+                }
+                $data['philhealth_id'] = $philhealthClean; // Store clean version
+            }
+
             if (empty($data['patient_code'])) {
                 $data['patient_code'] = PatientModel::generatePatientCode();
             }
@@ -77,6 +88,17 @@ class PatientController {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $oldData = $patient;
+
+            // Validate PhilHealth ID if provided
+            if (!empty($_POST['philhealth_id'])) {
+                $philhealthClean = preg_replace('/[^0-9]/', '', $_POST['philhealth_id']);
+                if (strlen($philhealthClean) !== 12) {
+                    Flash::set('danger', 'PhilHealth ID must be exactly 12 digits');
+                    header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/edit&id=$id");
+                    exit;
+                }
+                $_POST['philhealth_id'] = $philhealthClean; // Store clean version
+            }
 
             PatientModel::update($id, $_POST);
 

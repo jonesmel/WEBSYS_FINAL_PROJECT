@@ -29,17 +29,17 @@ $type_map = [
 
     <div class="card shadow-sm p-4">
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-striped table-bordered align-middle">
                 <thead class="table-light">
-                    <tr>
+                    <tr style="text-align: center;">
                         <?php if ($role === 'super_admin'): ?>
-                            <th>User</th>
+                            <th style="width:200px; min-width:150px;">User</th>
                         <?php endif; ?>
-                        <th>Title</th>
-                        <th>Message</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th></th>
+                        <th style="width:200px; min-width:150px;">Title</th>
+                        <th style="width:350px; min-width:250px;">Message</th>
+                        <th style="width:150px; min-width:120px;">Type</th>
+                        <th style="width:120px; min-width:100px;">Date</th>
+                        <th style="width:100px; min-width:80px;">Actions</th>
                     </tr>
                 </thead>
 
@@ -48,29 +48,29 @@ $type_map = [
                     <?php foreach ($rows as $n): ?>
                         <tr class="<?= $n['is_read'] ? '' : 'table-warning' ?>">
                             <?php if ($role === 'super_admin'): ?>
-                                <td>
+                                <td class="text-center">
                                     <?php if (!empty($n['email'])): ?>
-                                        <?= htmlspecialchars(ucfirst($n['role'])) ?> — 
-                                        <?= htmlspecialchars($n['email']) ?>
+                                        <strong class="text-primary"><?= htmlspecialchars(ucfirst($n['role'])) ?></strong><br>
+                                        <small class="text-muted"><?= htmlspecialchars($n['email']) ?></small>
                                     <?php else: ?>
                                         <span class="text-muted">Unknown User</span>
                                     <?php endif; ?>
                                 </td>
                             <?php endif; ?>
 
-                            <td><?= htmlspecialchars($n['title']) ?></td>
-                            <td><?= nl2br(htmlspecialchars($n['message'])) ?></td>
+                            <td class="text-center fw-bold text-primary"><?= htmlspecialchars($n['title']) ?></td>
+                            <td class="text-start"><?= nl2br(htmlspecialchars($n['message'])) ?></td>
 
                             <?php
                               $meta = $type_map[$n['type']] ?? null;
                               $label = $meta['label'] ?? ucfirst(str_replace('_',' ', $n['type'] ?? ''));
                               $badgeClass = $meta['class'] ?? 'secondary';
                             ?>
-                            <td><span class="badge bg-<?= htmlspecialchars($badgeClass) ?>"><?= htmlspecialchars($label) ?></span></td>
+                            <td class="text-center"><span class="badge bg-<?= htmlspecialchars($badgeClass) ?>"><?= htmlspecialchars($label) ?></span></td>
 
-                            <td><?= htmlspecialchars($n['created_at']) ?></td>
+                            <td class="text-center"><?= htmlspecialchars($n['created_at']) ?></td>
 
-                            <td>
+                            <td class="text-center">
                                 <?php if (!empty($n['link'])): ?>
                                     <a href="<?= htmlspecialchars($n['link']) ?>" class="btn btn-sm btn-outline-primary">Open</a>
                                 <?php endif; ?>
@@ -79,7 +79,7 @@ $type_map = [
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="<?= $role === 'super_admin' ? 6 : 5 ?>" class="text-center text-muted">
+                        <td colspan="<?= $role === 'super_admin' ? 6 : 5 ?>" class="text-center">
                             No notifications found.
                         </td>
                     </tr>
