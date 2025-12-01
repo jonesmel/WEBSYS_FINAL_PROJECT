@@ -32,6 +32,11 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
       </div>
 
       <div class="mb-3">
+        <label class="form-label">Patient Name</label>
+        <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($patient['name'] ?? '') ?>" required>
+      </div>
+
+      <div class="mb-3">
         <label class="form-label">TB Case Number</label>
         <input class="form-control" value="<?= htmlspecialchars($patient['tb_case_number']) ?>" disabled>
         <input type="hidden" name="tb_case_number" value="<?= htmlspecialchars($patient['tb_case_number']) ?>">

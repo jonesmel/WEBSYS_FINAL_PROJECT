@@ -68,6 +68,7 @@ require_once __DIR__.'/../partials/navbar.php';
         <thead class="table-light">
           <tr style="text-align: center;">
             <th style="width:180px; min-width:140px;">Patient Code</th>
+            <th style="width:180px; min-width:140px;">Name</th>
             <th style="width:140px; min-width:100px;">Barangay</th>
             <th style="width:60px; min-width:50px;">Age</th>
             <th style="width:60px; min-width:45px;">Sex</th>
@@ -81,6 +82,7 @@ require_once __DIR__.'/../partials/navbar.php';
           <?php foreach ($patients as $p): ?>
           <tr>
             <td class="text-center"><?= htmlspecialchars($p['patient_code']) ?></td>
+            <td class="text-center"><?= htmlspecialchars($p['name'] ?? '') ?></td>
             <td class="text-center"><?= htmlspecialchars($p['barangay']) ?></td>
             <td class="text-center"><?= $p['age'] ?></td>
             <td class="text-center"><?= $p['sex'] ?></td>

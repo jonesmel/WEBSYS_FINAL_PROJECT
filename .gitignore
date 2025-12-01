@@ -1,4 +1,6 @@
-
+# Environment files
+config/env.php
+.env
 
 # Composer
 /vendor/
@@ -7,6 +9,10 @@ composer.lock
 # Uploads
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Logs
+*.log
+logs/
 
 # IDE
 .idea/

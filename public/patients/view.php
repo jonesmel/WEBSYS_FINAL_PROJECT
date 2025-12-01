@@ -18,6 +18,9 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
     <h5>Patient Code</h5>
     <div class="fs-4 fw-bold mb-3"><?=htmlspecialchars($patient['patient_code'])?></div>
 
+    <h5>Patient Name</h5>
+    <div class="fs-5 mb-3"><?=htmlspecialchars($patient['name'] ?? '')?></div>
+
     <div class="row mb-3">
       <div class="col-md-3"><strong>Barangay:</strong><br><?=htmlspecialchars($patient['barangay'])?></div>
       <div class="col-md-3"><strong>Age:</strong><br><?=$patient['age']?></div>

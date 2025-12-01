@@ -70,16 +70,17 @@ class PatientModel {
       }
 
       $sql = "INSERT INTO patients (
-                patient_code, age, sex, barangay, contact_number, philhealth_id,
+                patient_code, name, age, sex, barangay, contact_number, philhealth_id,
                 tb_case_number, bacteriological_status, anatomical_site,
                 drug_susceptibility, treatment_history, created_by, user_id
               )
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       $stmt = $pdo->prepare($sql);
 
       $stmt->execute([
         $data['patient_code'],
+        $data['name'],
         $data['age'] ?? null,
         $data['sex'] ?? 'Unknown',
         $data['barangay'],
@@ -129,8 +130,9 @@ class PatientModel {
       $params = [];
 
       if (!empty($q)) {
-          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
+          $sql .= "AND (patient_code LIKE ? OR name LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
           $like = '%' . $q . '%';
+          $params[] = $like;
           $params[] = $like;
           $params[] = $like;
           $params[] = $like; // philhealth_id search
@@ -154,7 +156,8 @@ class PatientModel {
 
       if (!empty($q)) {
           $like = '%' . $q . '%';
-          $sql .= "AND (patient_code LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
+          $sql .= "AND (patient_code LIKE ? OR name LIKE ? OR tb_case_number LIKE ? OR philhealth_id LIKE ?) ";
+          $params[] = $like;
           $params[] = $like;
           $params[] = $like;
           $params[] = $like; // philhealth_id search
@@ -175,12 +178,13 @@ class PatientModel {
   public static function update($id, $data) {
       $pdo = getDB();
       $sql = "UPDATE patients SET
-                age=?, sex=?, barangay=?, contact_number=?, philhealth_id=?,
+                name=?, age=?, sex=?, barangay=?, contact_number=?, philhealth_id=?,
                 tb_case_number=?, bacteriological_status=?, anatomical_site=?,
                 drug_susceptibility=?, treatment_history=?
               WHERE patient_id=?";
 
       return $pdo->prepare($sql)->execute([
+        $data['name'],
         $data['age'] ?? null,
         $data['sex'] ?? 'Unknown',
         $data['barangay'],

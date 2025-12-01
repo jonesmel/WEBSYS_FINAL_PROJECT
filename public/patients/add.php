@@ -17,6 +17,11 @@ $barangays = BarangayHelper::getAll();
 
       <input type="hidden" name="patient_code" value="">
 
+      <div class="mb-3">
+        <label class="form-label">Patient Name</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Age</label>

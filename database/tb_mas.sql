@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 25, 2025 at 10:48 PM
+-- Generation Time: Dec 01, 2025 at 06:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -125,6 +125,7 @@ CREATE TABLE `patients` (
   `patient_id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `patient_code` varchar(50) NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
   `age` int(11) DEFAULT NULL,
   `sex` enum('M','F','Unknown') DEFAULT 'Unknown',
   `barangay` varchar(100) NOT NULL,
@@ -193,9 +194,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `email`, `password_hash`, `role`, `barangay_assigned`, `is_verified`, `verification_token`, `password_reset_required`, `created_at`) VALUES
-(1, 'admin@tbmas.local', '$2y$10$LbOElBBzV0eh6S5DC/6FIOrdvvB7KPrMGdou6iJTik0Cu8WpxJ6VS', 'super_admin', NULL, 1, NULL, 0, '2025-11-16 09:24:13'),
-(28, 'tysalango@gmail.com', '$2y$10$VUtBJKFtXw1H.4N9f7dqD.gblv1ZRhuh8CTvpiTWGCBQ2si3UtnaK', 'health_worker', 'Pacdal', 1, NULL, 0, '2025-11-23 11:41:07'),
-(29, 'tyronepaladin@gmail.com', '$2y$10$chY8Bj2Kzt/0rZF1ewt5C.42eGbyZtEk/Soa8LrvPaT0xZ8jSGile', 'health_worker', 'Camp 7', 1, NULL, 0, '2025-11-23 11:46:06');
+(1, 'admin@tbmas.local', '$2y$10$UkkMNqqE2UyX5coiIhnu3emtwFw8lG21536ltcFK2CD1vxiy2b/iy', 'super_admin', NULL, 1, NULL, 0, '2025-11-16 09:24:13');
 
 --
 -- Indexes for dumped tables
@@ -274,49 +273,49 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `contact_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `contact_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `import_logs`
 --
 ALTER TABLE `import_logs`
-  MODIFY `import_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `import_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `medications`
 --
 ALTER TABLE `medications`
-  MODIFY `medication_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `medication_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `patients`
 --
 ALTER TABLE `patients`
-  MODIFY `patient_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `patient_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `referrals`
 --
 ALTER TABLE `referrals`
-  MODIFY `referral_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `referral_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
