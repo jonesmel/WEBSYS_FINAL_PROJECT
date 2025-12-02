@@ -10,7 +10,7 @@ VerifyEmailMiddleware::enforce();
 
 $uid = $_SESSION['user']['user_id'];
 $pdo = getDB();
-$stmt = $pdo->prepare("SELECT p.patient_id, p.patient_code FROM patients p WHERE p.user_id = ?");
+$stmt = $pdo->prepare("SELECT p.patient_id, p.patient_code, p.name FROM patients p WHERE p.user_id = ?");
 $stmt->execute([$uid]);
 $patient = $stmt->fetch();
 
@@ -34,8 +34,8 @@ $nextNotif = $nstmt->fetch();
   <h3 class="mb-4">Patient Dashboard</h3>
 
   <div class="card shadow-sm p-4 mb-4">
-    <h5>Your Patient Code</h5>
-    <div class="fs-4 fw-bold"><?=$patient['patient_code']?></div>
+    <h5>Your Information</h5>
+    <div class="fs-4 fw-bold"><?=$patient['name']?> (<?=$patient['patient_code']?>)</div>
   </div>
 
   <div class="card shadow-sm p-4">

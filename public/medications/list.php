@@ -30,10 +30,10 @@ require_once __DIR__.'/../partials/navbar.php';
       <!-- Search All Fields -->
       <div class="d-flex flex-column" style="width: 250px;">
         <label class="form-label mb-1">Search All Fields</label>
-        <input name="q"
+      <input name="q"
                value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
                class="form-control"
-               placeholder="Patient code, drugs, notes, dates, etc.">
+               placeholder="Patient name/code, drugs, notes, dates, etc.">
       </div>
 
       <!-- Clear Button -->
@@ -51,23 +51,34 @@ require_once __DIR__.'/../partials/navbar.php';
       <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
           <thead class="table-light">
-            <tr style="text-align: center;">
-              <th>Patient Code</th>
-              <th>Drugs</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Notes</th>
-              <th>Created</th>
+          <tr style="text-align: center;">
+              <th style="width:200px; min-width:150px;">Patient (Code)</th>
+              <th style="width:250px; min-width:200px;">Drugs</th>
+              <th style="width:120px; min-width:100px;">Start</th>
+              <th style="width:120px; min-width:100px;">End</th>
+              <th style="width:120px; min-width:100px;">Compliance</th>
+              <th style="width:150px; min-width:120px;">Notes</th>
+              <th style="width:120px; min-width:100px;">Created</th>
               <?php if ($_SESSION['user']['role'] !== 'patient'): ?><th style="width:140px; min-width:120px;">Actions</th><?php endif; ?>
             </tr>
           </thead>
           <tbody class="medications-table-body">
             <?php foreach ($rows as $m): ?>
               <tr>
-                <td class="text-center"><?= htmlspecialchars($m['patient_code'] ?? $m['patient_id']) ?></td>
+                <td class="text-center fw-bold text-primary">
+                  <?= htmlspecialchars($m['name'] ?? '') ?> (<?= htmlspecialchars($m['patient_code'] ?? $m['patient_id']) ?>)
+                </td>
                 <td class="text-center"><?= htmlspecialchars($m['drugs'] ?? $m['regimen'] ?? '-') ?></td>
                 <td class="text-center"><?= htmlspecialchars($m['start_date']) ?></td>
                 <td class="text-center"><?= htmlspecialchars($m['end_date']) ?></td>
+                <td class="text-center">
+                  <span class="badge
+                    <?=$m['compliance_status'] === 'taken' ? 'bg-success' :
+                       ($m['compliance_status'] === 'missed' ? 'bg-danger' :
+                       ($m['compliance_status'] === 'partial' ? 'bg-warning' : 'bg-secondary'))?>">
+                    <?=ucfirst($m['compliance_status'] ?? 'pending')?>
+                  </span>
+                </td>
                 <td class="text-center"><?= htmlspecialchars($m['notes']) ?></td>
                 <td class="text-center"><?= htmlspecialchars($m['created_at'] ?? '-') ?></td>
                 <?php if ($_SESSION['user']['role'] !== 'patient'): ?>

@@ -11,11 +11,18 @@ class NotificationModel {
             $data['type'] = $data['notification_type'];
         }
 
-        if (empty($data['user_id']) && !empty($data['patient_id'])) {
-            $stmt = $pdo->prepare("SELECT user_id FROM patients WHERE patient_id = ?");
-            $stmt->execute([$data['patient_id']]);
-            $resolved = $stmt->fetchColumn();
-            if (!empty($resolved)) $data['user_id'] = $resolved;
+        if (!empty($data['patient_id']) && (empty($data['user_id']) || $data['user_id'] === -999)) {
+            // If temporary user_id -999, this is a system notification that should show patient_id in UI
+            // but not auto-route to patient. Set user_id to null (system notification)
+            if ($data['user_id'] === -999) {
+                $data['user_id'] = null;
+            } else {
+                // Normal case: redirect to patient's user account
+                $stmt = $pdo->prepare("SELECT user_id FROM patients WHERE patient_id = ?");
+                $stmt->execute([$data['patient_id']]);
+                $resolved = $stmt->fetchColumn();
+                if (!empty($resolved)) $data['user_id'] = $resolved;
+            }
         }
 
         $stmt = $pdo->prepare("

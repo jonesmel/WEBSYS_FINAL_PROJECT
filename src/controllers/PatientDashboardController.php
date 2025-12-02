@@ -20,6 +20,29 @@ class PatientDashboardController {
 
     public function medications() {
         AuthMiddleware::requireRole(['patient']);
+
+        $uid = $_SESSION['user']['user_id'];
+
+        $pdo = getDB();
+        $stmt = $pdo->prepare("SELECT patient_id FROM patients WHERE user_id = ?");
+        $stmt->execute([$uid]);
+        $patientRecord = $stmt->fetch();
+        $pid = $patientRecord ? $patientRecord['patient_id'] : null;
+
+        if ($pid) {
+            // Get medications with compliance information - include all new compliance fields
+            try {
+                $stmt = $pdo->prepare("SELECT * FROM medications WHERE patient_id = ? ORDER BY created_at DESC");
+                $stmt->execute([$pid]);
+                $rows = $stmt->fetchAll();
+            } catch (Exception $e) {
+                // If query fails, return empty array
+                $rows = [];
+            }
+        } else {
+            $rows = [];
+        }
+
         include __DIR__ . '/../../public/patient/medications.php';
     }
 

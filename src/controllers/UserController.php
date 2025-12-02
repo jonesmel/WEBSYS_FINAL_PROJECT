@@ -67,8 +67,7 @@ class UserController {
             $token = bin2hex(random_bytes(16));
             $tempPass = bin2hex(random_bytes(6));
 
-            // Create user
-            $uid = UserModel::createPatientUser($email, $tempPass, $token);
+            $uid = UserModel::createPatientUser($email, $tempPass, $token, $patient_id);
 
             // Assign to patient
             $pdo = getDB();

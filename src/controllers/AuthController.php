@@ -4,6 +4,7 @@ require_once __DIR__ . '/../models/LogModel.php';
 require_once __DIR__ . '/../helpers/Flash.php';
 require_once __DIR__ . '/../helpers/EmailHelper.php';
 require_once __DIR__ . '/../models/NotificationModel.php';
+require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class AuthController {
 
@@ -41,6 +42,11 @@ class AuthController {
 
                 session_regenerate_id(true);
                 $_SESSION['user'] = $user;
+
+                // Check patient treatment status for patients
+                if ($user['role'] === 'patient') {
+                    AuthMiddleware::checkPatientTreatmentStatus($user['user_id']);
+                }
 
                 if ($user['role'] === 'super_admin') {
                     header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/dashboard");

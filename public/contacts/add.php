@@ -19,7 +19,7 @@ $barangays = BarangayHelper::getAll();
           <option value="">Select Patient</option>
           <?php foreach ($patients as $p): ?>
             <option value="<?=$p['patient_id']?>">
-              <?=$p['patient_code']?> (<?=$p['barangay']?>)
+              <?=$p['name'] ?? ''?> (<?=$p['patient_code']?>)
             </option>
           <?php endforeach; ?>
         </select>

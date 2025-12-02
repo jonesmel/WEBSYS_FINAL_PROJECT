@@ -4,6 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/helpers/EmailHelper.php';
 require_once __DIR__ . '/../src/models/NotificationModel.php';
 require_once __DIR__ . '/../src/models/LogModel.php';
+require_once __DIR__ . '/../src/models/MedicationModel.php';
 
 $pdo = getDB();
 
@@ -61,4 +62,20 @@ foreach ($due as $row) {
             'system'
         );
     }
+}
+
+// Auto-mark missed medications that have been overdue for 3+ days
+$autoMarkedCount = MedicationModel::autoMarkMissedMedications();
+
+if ($autoMarkedCount > 0) {
+    LogModel::insertLog(
+        null,
+        'compliance_auto_checked',
+        'medications',
+        null,
+        null,
+        json_encode(['auto_marked_missed' => $autoMarkedCount, 'message' => 'Automatic compliance checking ran via CRON']),
+        'CRON',
+        'system'
+    );
 }

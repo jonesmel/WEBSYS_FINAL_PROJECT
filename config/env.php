@@ -1,7 +1,7 @@
 <?php
 define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_USER', '');
-define('SMTP_PASS', '');
+define('SMTP_USER', 'tyronepaladins@gmail.com');
+define('SMTP_PASS', 'rlbvrtjuwjqkdjhn');
 define('SMTP_PORT', 587);
 
 define('SMTP_SECURE', 'tls');

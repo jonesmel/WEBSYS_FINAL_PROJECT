@@ -55,6 +55,7 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list">Contact Tracing</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index">Referrals</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Medication Compliance</a></li>
               </ul>
             </li>
 
@@ -84,6 +85,7 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
             </li>
 
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
+            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Compliance</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=notification/list">Notifications</a></li>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=health/profile">Profile</a></li>
           <?php endif; ?>

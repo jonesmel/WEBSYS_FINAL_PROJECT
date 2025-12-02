@@ -16,18 +16,20 @@ require_once __DIR__.'/../partials/navbar.php';
         <thead class="table-light">
           <tr style="text-align: center;">
             <th style="width:150px; min-width:120px;">Referral Code</th>
-            <th style="width:120px; min-width:100px;">Patient Code</th>
+            <th style="width:200px; min-width:180px;">Patient (Name/Code)</th>
             <th style="width:150px; min-width:120px;">Receiving Barangay</th>
             <th style="width:100px; min-width:80px;">Status</th>
             <th style="width:120px; min-width:100px;">Date</th>
-            <th style="width:160px; min-width:140px;">Actions</th>
+            <th style="width:100px; min-width:80px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <?php if ($rows): foreach ($rows as $r): ?>
             <tr>
               <td class="text-center fw-bold text-primary"><?= htmlspecialchars($r['referral_code']) ?></td>
-              <td class="text-center fw-bold text-success"><?= htmlspecialchars($r['patient_code']) ?></td>
+              <td class="text-center fw-bold text-success">
+                <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['patient_code']) ?>)
+              </td>
               <td class="text-center"><?= htmlspecialchars($r['receiving_barangay']) ?></td>
               <td class="text-center">
                 <?php if ($r['referral_status'] === 'received'): ?>

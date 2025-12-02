@@ -18,7 +18,7 @@ require_once __DIR__.'/../partials/navbar.php';
     <p><strong>Date:</strong> <?= $ref['referral_date'] ?></p>
 
     <h5 class="text-primary mt-4">Patient</h5>
-    <p><strong>Patient Code:</strong> <?= $ref['patient_code'] ?></p>
+    <p><strong>Patient:</strong> <?= htmlspecialchars($ref['name'] ?? '') ?> (<?= $ref['patient_code'] ?>)</p>
     <p><strong>TB Case Number:</strong> <?= $ref['patient_tb_case'] ?></p>
 
     <h5 class="text-primary mt-4">Sender (Referring Barangay)</h5>

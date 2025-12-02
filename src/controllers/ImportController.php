@@ -61,6 +61,13 @@ class ImportController {
                         EmailHelper::sendVerificationEmail($existing['email'], $token);
                         $userId = $existing['user_id'];
                     } else {
+                        // Check treatment outcome before creating user
+                        if (isset($data['treatment_outcome']) && $data['treatment_outcome'] === 'died') {
+                            $errors[] = "Cannot create user account for deceased patients (row)";
+                            $skipped++;
+                            continue;
+                        }
+
                         // Create new patient user (unverified)
                         try {
                             $tempPass = bin2hex(random_bytes(5));

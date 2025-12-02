@@ -1,11 +1,11 @@
-name,patient_code,age,sex,barangay,contact_number,philhealth_id,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history
-Juan dela Cruz,PAT-2025-00001,34,M,Ambiong,09123456789,123456789012,TBCASE-2025-00001,BC,P,DS,New
-Maria Santos,PAT-2025-00002,29,F,Loakan Proper,09987654321,,TBCASE-2025-00002,CD,EP,DR,Retreatment
-Jose Ramirez,PAT-2025-00003,42,M,BGH Compound,09112223334,987654321098,TBCASE-2025-00003,Unknown,P,Unknown,New
-Ana Gonzalez,PAT-2025-00004,51,F,Bakakeng Central,09199887766,,TBCASE-2025-00004,BC,EP,DS,New
-Pedro Martinez,PAT-2025-00005,37,M,Pacdal,09121212121,112233445566,TBCASE-2025-00005,CD,P,DR,Retreatment
-Rosa Lopez,PAT-2025-00006,60,F,Camp 7,09154545454,,TBCASE-2025-00006,Unknown,EP,Unknown,New
-Miguel Hernandez,PAT-2025-00007,22,M,Ambiong,09166677788,778899001122,TBCASE-2025-00007,BC,P,DS,New
-Carmen Torres,PAT-2025-00008,48,F,Loakan Proper,09188899900,,TBCASE-2025-00008,CD,EP,DR,Retreatment
-Elena Cruz,PAT-2025-00009,33,F,BGH Compound,09133344455,334455667788,TBCASE-2025-00009,Unknown,P,Unknown,New
-Roberto Morales,PAT-2025-00010,45,M,Bakakeng Central,09177733311,,TBCASE-2025-00010,BC,EP,DS,Retreatment
+name,email,patient_code,age,sex,barangay,contact_number,philhealth_id,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history
+Juan dela Cruz,juan.delacruz@sample.com,PAT-2025-00001,34,M,Ambiong,09123456789,123456789012,TBCASE-2025-00001,BC,P,DS,New
+Maria Santos,,PAT-2025-00002,29,F,Loakan Proper,09987654321,,TBCASE-2025-00002,CD,EP,DR,Retreatment
+Jose Ramirez,jose.ramirez@sample.com,PAT-2025-00003,42,M,BGH Compound,09112223334,987654321098,TBCASE-2025-00003,Unknown,P,Unknown,New
+Ana Gonzalez,,PAT-2025-00004,51,F,Bakakeng Central,09199887766,,TBCASE-2025-00004,BC,EP,DS,New
+Pedro Martinez,pedro.martinez@sample.com,PAT-2025-00005,37,M,Pacdal,09121212121,112233445566,TBCASE-2025-00005,CD,P,DR,Retreatment
+Rosa Lopez,,PAT-2025-00006,60,F,Camp 7,09154545454,,TBCASE-2025-00006,Unknown,EP,Unknown,New
+Miguel Hernandez,miguel.hernandez@sample.com,PAT-2025-00007,22,M,Ambiong,09166677788,778899001122,TBCASE-2025-00007,BC,P,DS,New
+Carmen Torres,,PAT-2025-00008,48,F,Loakan Proper,09188899900,,TBCASE-2025-00008,CD,EP,DR,Retreatment
+Elena Cruz,elena.cruz@sample.com,PAT-2025-00009,33,F,BGH Compound,09133344455,334455667788,TBCASE-2025-00009,Unknown,P,Unknown,New
+Roberto Morales,,PAT-2025-00010,45,M,Bakakeng Central,09177733311,,TBCASE-2025-00010,BC,EP,DS,Retreatment

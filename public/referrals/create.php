@@ -14,7 +14,7 @@ require_once __DIR__.'/../partials/navbar.php';
             <option value="">Select Patient</option>
             <?php foreach ($patients as $p): ?>
                 <option value="<?= $p['patient_id'] ?>">
-                    <?= htmlspecialchars($p['patient_code']) ?> (<?= htmlspecialchars($p['barangay']) ?>)
+                    <?= htmlspecialchars($p['name'] ?? '') ?> (<?= htmlspecialchars($p['patient_code']) ?>)
                 </option>
             <?php endforeach; ?>
         </select>

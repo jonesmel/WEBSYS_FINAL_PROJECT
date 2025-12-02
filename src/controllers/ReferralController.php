@@ -64,7 +64,9 @@ class ReferralController {
             exit;
         }
 
+        // Store minimal patient information at time of referral (simple approach)
         $data['tb_case_number'] = $patient['tb_case_number'];
+
         $data['referral_code'] = 'REF-' . date('Ymd') . '-' . rand(1000,9999);
 
         $id = ReferralModel::create($data);
@@ -150,16 +152,23 @@ class ReferralController {
 
       ReferralModel::updateReceiving($id, $data);
 
+      // Fetch patient data before updating
+      $patient = PatientModel::getById($ref['patient_id']);
+
       PatientModel::update($ref['patient_id'], [
+          'patient_code' => $patient['patient_code'],
+          'name' => $patient['name'] ?? '',
+          'tb_case_number' => $patient['tb_case_number'],
+          'philhealth_id' => $patient['philhealth_id'] ?? null,
           'age' => $patient['age'],
           'sex' => $patient['sex'],
           'barangay' => $ref['receiving_barangay'],
           'contact_number' => $patient['contact_number'],
-          'tb_case_number' => $patient['tb_case_number'],
           'bacteriological_status' => $patient['bacteriological_status'],
           'anatomical_site' => $patient['anatomical_site'],
           'drug_susceptibility' => $patient['drug_susceptibility'],
-          'treatment_history' => $patient['treatment_history']
+          'treatment_history' => $patient['treatment_history'],
+          'treatment_outcome' => $patient['treatment_outcome']
       ]);
 
       LogModel::insertLog($_SESSION['user']['user_id'], 'receive', 'referrals',

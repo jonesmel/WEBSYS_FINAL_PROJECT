@@ -126,9 +126,10 @@ class AjaxController {
         }
 
         if ($q !== '') {
-            // search patient_code, tb_case_number, philhealth_id, age, sex, and barangay
+            // search patient_code, name, tb_case_number, philhealth_id, age, sex, and barangay
             $sql .= " AND (
                 p.patient_code LIKE ? OR
+                p.name LIKE ? OR
                 p.tb_case_number LIKE ? OR
                 p.philhealth_id LIKE ? OR
                 CAST(p.age AS CHAR) LIKE ? OR
@@ -137,6 +138,7 @@ class AjaxController {
             )";
             $like = "%$q%";
             $params[] = $like;
+            $params[] = $like; // name search
             $params[] = $like;
             $params[] = $like; // philhealth_id search
             $params[] = $like;
@@ -161,11 +163,13 @@ class AjaxController {
             return [
                 'patient_id' => $r['patient_id'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'barangay' => $r['barangay'],
                 'age' => $r['age'],
                 'sex' => $r['sex'],
                 'tb_case_number' => $r['tb_case_number'],
                 'philhealth_id' => $r['philhealth_id'] ?? null,
+                'treatment_outcome' => $r['treatment_outcome'],
                 'has_user' => ($r['has_user'] ? 1 : 0)
             ];
         }, $rows);
@@ -181,7 +185,7 @@ class AjaxController {
         $barangay = trim($_GET['barangay'] ?? '');
 
         $sql = "
-            SELECT c.*, p.patient_code, p.barangay AS patient_barangay
+            SELECT c.*, p.patient_code, p.name, p.barangay AS patient_barangay
             FROM contacts c
             LEFT JOIN patients p ON p.patient_id = c.patient_id
             WHERE c.is_archived = 0
@@ -189,9 +193,10 @@ class AjaxController {
         $params = [];
 
         if ($q !== '') {
-            // search contact_code, patient_code, relationship, contact_number, and date fields
-            $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ? OR c.contact_number LIKE ? OR DATE_FORMAT(c.created_at, '%Y-%m-%d') LIKE ?)";
+            // search contact_code, patient_code, name, relationship, contact_number, and date fields
+            $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR c.relationship LIKE ? OR c.contact_number LIKE ? OR DATE_FORMAT(c.created_at, '%Y-%m-%d') LIKE ?)";
             $like = "%$q%";
+            $params[] = $like;
             $params[] = $like;
             $params[] = $like;
             $params[] = $like;
@@ -217,6 +222,7 @@ class AjaxController {
                 'contact_code' => $r['contact_code'],
                 'patient_id' => $r['patient_id'] ?? null,
                 'patient_code' => $r['patient_code'] ?? '',
+                'name' => $r['name'] ?? '',
                 'patient_barangay' => $r['patient_barangay'] ?? '',
                 'age' => $r['age'],
                 'sex' => $r['sex'],
@@ -242,7 +248,7 @@ class AjaxController {
         $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
         $sql = "
-            SELECT m.*, p.patient_code
+            SELECT m.*, p.patient_code, p.name
             FROM medications m
             LEFT JOIN patients p ON p.patient_id = m.patient_id
             WHERE 1=1
@@ -256,23 +262,23 @@ class AjaxController {
         }
 
         if ($q !== '') {
-            // search drugs, notes, patient_code, start_date, end_date for health workers
+            // search drugs, notes, patient_code, name, start_date, end_date for health workers
             if ($userRole === 'health_worker') {
-                // Health workers only search within their AOR (patient_code restricted by above filter)
+                // Health workers can search patient info within their AOR (patient filter already applied)
                 $sql .= " AND (
-                    m.drugs LIKE ? OR m.notes LIKE ? OR
+                    m.drugs LIKE ? OR m.notes LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR
                     DATE_FORMAT(m.start_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(m.end_date, '%Y-%m-%d') LIKE ?
                 )";
                 $like = "%$q%";
-                $params = array_merge($params, [$like, $like, $like, $like]);
+                $params = array_merge($params, [$like, $like, $like, $like, $like, $like]);
             } else {
-                // Super admin can search patient_code too
+                // Super admin can search patient_code and name too
                 $sql .= " AND (
-                    m.drugs LIKE ? OR m.notes LIKE ? OR p.patient_code LIKE ? OR
+                    m.drugs LIKE ? OR m.notes LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR
                     DATE_FORMAT(m.start_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(m.end_date, '%Y-%m-%d') LIKE ?
                 )";
                 $like = "%$q%";
-                $params = array_merge($params, [$like, $like, $like, $like, $like]);
+                $params = array_merge($params, [$like, $like, $like, $like, $like, $like]);
             }
         }
 
@@ -292,6 +298,7 @@ class AjaxController {
             return [
                 'medication_id' => $r['medication_id'] ?? $r['id'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'drugs' => $r['drugs'] ?? $r['regimen'] ?? '',
                 'start_date' => $r['start_date'],
                 'end_date' => $r['end_date'],
@@ -312,7 +319,7 @@ class AjaxController {
         $referring_barangay = trim($_GET['referring_barangay'] ?? '');
 
         $sql = "
-            SELECT r.*, p.patient_code
+            SELECT r.*, p.patient_code, p.name
             FROM referrals r
             LEFT JOIN patients p ON p.patient_id = r.patient_id
             WHERE 1=1
@@ -320,14 +327,14 @@ class AjaxController {
         $params = [];
 
         if ($q !== '') {
-            // broad search: code, patient_code, details, dates, status
+            // broad search: code, patient_code, patient_name, details, dates, status
             $sql .= " AND (
-                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
                 DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
                 r.referral_status LIKE ?
             )";
             $like = "%$q%";
-            $params = [$like, $like, $like, $like, $like, $like, $like];
+            $params = [$like, $like, $like, $like, $like, $like, $like, $like];
         }
 
         if ($barangay !== '') {
@@ -352,6 +359,7 @@ class AjaxController {
                 'referral_id' => $r['referral_id'],
                 'referral_code' => $r['referral_code'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'referral_date' => $r['referral_date'],
                 'referring_unit' => $r['referring_unit'],
                 'referring_tel' => $r['referring_tel'],
@@ -374,7 +382,7 @@ class AjaxController {
         $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
         $sql = "
-            SELECT r.*, p.patient_code
+            SELECT r.*, p.patient_code, p.name
             FROM referrals r
             LEFT JOIN patients p ON p.patient_id = r.patient_id
             WHERE r.created_by = ?
@@ -383,12 +391,12 @@ class AjaxController {
 
         if ($q !== '') {
             $sql .= " AND (
-                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
                 DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
                 r.referral_status LIKE ?
             )";
             $like = "%$q%";
-            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like, $like]);
         }
 
         if ($barangay !== '') {
@@ -407,6 +415,7 @@ class AjaxController {
                 'referral_id' => $r['referral_id'],
                 'referral_code' => $r['referral_code'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'referral_date' => $r['referral_date'],
                 'referring_unit' => $r['referring_unit'],
                 'referring_tel' => $r['referring_tel'],
@@ -428,7 +437,7 @@ class AjaxController {
         $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
         $sql = "
-            SELECT r.*, p.patient_code
+            SELECT r.*, p.patient_code, p.name
             FROM referrals r
             LEFT JOIN patients p ON p.patient_id = r.patient_id
             WHERE r.receiving_barangay = ? AND r.referral_status = 'pending'
@@ -437,12 +446,12 @@ class AjaxController {
 
         if ($q !== '') {
             $sql .= " AND (
-                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
                 DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
                 r.referral_status LIKE ?
             )";
             $like = "%$q%";
-            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like, $like]);
         }
 
         if ($barangay !== '') {
@@ -461,6 +470,7 @@ class AjaxController {
                 'referral_id' => $r['referral_id'],
                 'referral_code' => $r['referral_code'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'referral_date' => $r['referral_date'],
                 'referring_unit' => $r['referring_unit'],
                 'referring_tel' => $r['referring_tel'],
@@ -482,7 +492,7 @@ class AjaxController {
         $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
         $sql = "
-            SELECT r.*, p.patient_code
+            SELECT r.*, p.patient_code, p.name
             FROM referrals r
             LEFT JOIN patients p ON p.patient_id = r.patient_id
             WHERE r.receiving_barangay = ? AND r.referral_status = 'received'
@@ -491,12 +501,12 @@ class AjaxController {
 
         if ($q !== '') {
             $sql .= " AND (
-                r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
+                r.referral_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR r.details LIKE ? OR r.reason_for_referral LIKE ? OR
                 DATE_FORMAT(r.referral_date, '%Y-%m-%d') LIKE ? OR DATE_FORMAT(r.created_at, '%Y-%m-%d') LIKE ? OR
                 r.referral_status LIKE ?
             )";
             $like = "%$q%";
-            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like]);
+            $params = array_merge($params, [$like, $like, $like, $like, $like, $like, $like, $like]);
         }
 
         if ($barangay !== '') {
@@ -515,6 +525,7 @@ class AjaxController {
                 'referral_id' => $r['referral_id'],
                 'referral_code' => $r['referral_code'],
                 'patient_code' => $r['patient_code'],
+                'name' => $r['name'] ?? '',
                 'referral_date' => $r['referral_date'],
                 'referring_unit' => $r['referring_unit'],
                 'referring_tel' => $r['referring_tel'],

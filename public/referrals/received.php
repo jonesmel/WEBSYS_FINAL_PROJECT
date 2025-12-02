@@ -12,11 +12,11 @@ require_once __DIR__.'/../partials/navbar.php';
         <thead class="table-light">
           <tr style="text-align: center;">
             <th style="width:150px; min-width:120px;">Referral Code</th>
-            <th style="width:120px; min-width:100px;">Patient Code</th>
+            <th style="width:200px; min-width:180px;">Patient (Name/Code)</th>
             <th style="width:150px; min-width:120px;">Sender Barangay</th>
             <th style="width:130px; min-width:110px;">Date Received</th>
             <th style="width:100px; min-width:80px;">Status</th>
-            <th style="width:120px; min-width:100px;">Actions</th>
+            <th style="width:100px; min-width:80px;">Actions</th>
           </tr>
         </thead>
 
@@ -24,7 +24,9 @@ require_once __DIR__.'/../partials/navbar.php';
           <?php if ($rows): foreach ($rows as $r): ?>
             <tr>
               <td class="text-center fw-bold text-primary"><?= htmlspecialchars($r['referral_code']) ?></td>
-              <td class="text-center fw-bold text-success"><?= htmlspecialchars($r['patient_code']) ?></td>
+              <td class="text-center fw-bold text-success">
+                <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['patient_code']) ?>)
+              </td>
               <td class="text-center fw-bold text-info"><?= htmlspecialchars($r['referring_unit']) ?></td>
 
               <td class="text-center"><?= htmlspecialchars($r['date_received']) ?></td>

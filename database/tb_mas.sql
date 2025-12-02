@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 01, 2025 at 06:49 PM
+-- Generation Time: Dec 02, 2025 at 12:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -90,6 +90,12 @@ CREATE TABLE `medications` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `notes` text DEFAULT NULL,
+  `compliance_status` enum('pending','taken','missed','partial') DEFAULT 'pending',
+  `compliance_date` date DEFAULT NULL,
+  `compliance_marked_by` int(11) DEFAULT NULL,
+  `compliance_notes` text DEFAULT NULL,
+  `scheduled_for_date` date DEFAULT NULL,
+  `compliance_deadline` date DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -136,6 +142,8 @@ CREATE TABLE `patients` (
   `anatomical_site` enum('P','EP','Unknown') DEFAULT 'Unknown',
   `drug_susceptibility` enum('DS','DR','Unknown') DEFAULT 'Unknown',
   `treatment_history` enum('New','Retreatment','Unknown') DEFAULT 'Unknown',
+  `treatment_outcome` enum('active','cured','treatment_completed','died','lost_to_followup','failed','transferred_out') NOT NULL DEFAULT 'active',
+  `outcome_notes` varchar(255) DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -194,7 +202,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `email`, `password_hash`, `role`, `barangay_assigned`, `is_verified`, `verification_token`, `password_reset_required`, `created_at`) VALUES
-(1, 'admin@tbmas.local', '$2y$10$UkkMNqqE2UyX5coiIhnu3emtwFw8lG21536ltcFK2CD1vxiy2b/iy', 'super_admin', NULL, 1, NULL, 0, '2025-11-16 09:24:13');
+(1, 'admin@tbmas.local', '$2y$10$UkkMNqqE2UyX5coiIhnu3emtwFw8lG21536ltcFK2CD1vxiy2b/iy', 'super_admin', NULL, 1, NULL, 0, '2025-11-16 09:24:13'),
+(2, 'tysalango@gmail.com', '$2y$10$hRMMiYkQy6DG063A.eaT0.yeapAhpJiIMRcclsR.7NYLH.t4npPUy', 'health_worker', 'Loakan Proper', 1, NULL, 0, '2025-12-01 19:00:56'),
+(3, 'tyronepaladin@gmail.com', '$2y$10$SwDKh1jZu0uDwyt92pMIzOrAum48o/jFk1MtRUZZtHEy60rxnRHy.', 'health_worker', 'Irisan', 1, NULL, 0, '2025-12-01 19:23:23');
 
 --
 -- Indexes for dumped tables
@@ -228,7 +238,8 @@ ALTER TABLE `import_logs`
 --
 ALTER TABLE `medications`
   ADD PRIMARY KEY (`medication_id`),
-  ADD KEY `patient_id` (`patient_id`);
+  ADD KEY `patient_id` (`patient_id`),
+  ADD KEY `fk_medications_compliance_user` (`compliance_marked_by`);
 
 --
 -- Indexes for table `notifications`
@@ -315,7 +326,7 @@ ALTER TABLE `referrals`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -344,6 +355,7 @@ ALTER TABLE `import_logs`
 -- Constraints for table `medications`
 --
 ALTER TABLE `medications`
+  ADD CONSTRAINT `fk_medications_compliance_user` FOREIGN KEY (`compliance_marked_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   ADD CONSTRAINT `medications_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE;
 
 --

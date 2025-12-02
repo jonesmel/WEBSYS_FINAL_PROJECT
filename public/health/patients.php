@@ -22,7 +22,7 @@ $patients = PatientModel::getAllByBarangay($barangay);
       <table class="table table-bordered align-middle table-hover">
         <thead>
           <tr>
-            <th>Patient Code</th>
+            <th>Patient (Name/Code)</th>
             <th>Age</th>
             <th>Sex</th>
             <th>TB Case #</th>
@@ -32,7 +32,10 @@ $patients = PatientModel::getAllByBarangay($barangay);
         <tbody>
         <?php if (!empty($patients)): foreach ($patients as $p): ?>
           <tr>
-            <td><?=htmlspecialchars($p['patient_code'])?></td>
+            <td>
+              <?= htmlspecialchars($p['name'] ?? '') ?>
+              (<?= htmlspecialchars($p['patient_code']) ?>)
+            </td>
             <td><?=htmlspecialchars($p['age'])?></td>
             <td><?=htmlspecialchars($p['sex'])?></td>
             <td><?=htmlspecialchars($p['tb_case_number'])?></td>

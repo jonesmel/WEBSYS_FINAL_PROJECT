@@ -33,21 +33,55 @@ class PDFHelper {
 
     $safe = function($x){ return htmlspecialchars($x ?? '', ENT_QUOTES, 'UTF-8'); };
 
-    // Simple two-column/boxed layout to capture key form 7 fields.
-return "
+    return "
 <html>
 <head>
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>
   <style>
-    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; line-height:1.4; }
-    .container { width: 100%; }
-    .header { text-align:center; font-size:18px; margin-bottom:15px; font-weight:bold; text-transform:uppercase; }
-    table { width:100%; border-collapse:collapse; margin-bottom:12px; }
-    th, td { border:1px solid #444; padding:6px; font-size:12px; text-align:left; vertical-align:top; }
-    th { background:#f2f2f2; font-weight:bold; }
-    .footer-note { font-size:10px; color:#666; margin-top:12px; text-align:center; border-top:1px solid #ccc; padding-top:6px; }
-    .line { border-bottom:1px solid #000; min-width:100px; display:inline-block; }
-    .longline { border-bottom:1px solid #000; min-width:250px; display:inline-block; }
+    body {
+      font-family: DejaVu Sans, Arial, sans-serif;
+      font-size: 12px;
+      color: #111;
+      line-height:1.4;
+    }
+    .container {
+      width: 100%;
+      position: relative;
+      min-height: 100vh;
+    }
+    .header {
+      text-align:center;
+      font-size:18px;
+      margin-bottom:15px;
+      font-weight:bold;
+      text-transform:uppercase;
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-bottom:12px;
+    }
+    th, td {
+      border:1px solid #444;
+      padding:6px;
+      font-size:12px;
+      text-align:left;
+      vertical-align:top;
+    }
+    th {
+      background:#f2f2f2;
+      font-weight:bold;
+    }
+    .footer-note {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      border-top:1px solid #ccc;
+      padding-top:6px;
+    }
   </style>
 </head>
 <body>
@@ -57,70 +91,53 @@ return "
     <table>
       <tr><th>Referral Code</th><th>Referral Date</th></tr>
       <tr>
-        <td>". $safe($ref['referral_code']) ."</td>
-        <td>". $safe(substr($ref['referral_date'] ?? '', 0, 10)) ."</td>
+        <td>{$safe($ref['referral_code'])}</td>
+        <td>{$safe(substr($ref['referral_date'] ?? '', 0, 10))}</td>
       </tr>
     </table>
 
     <table>
-      <tr><th>Patient Code</th><th>TB Case #</th><th>Barangay</th></tr>
+      <tr><th>Patient Code</th><th>Patient Name</th><th>TB Case #</th><th>Barangay</th></tr>
       <tr>
-        <td>". $safe($patient['patient_code']) ."</td>
-        <td>". $safe($patient['tb_case_number']) ."</td>
-        <td>". $safe($patient['barangay'] ?? $ref['patient_barangay']) ."</td>
+        <td>{$safe($patient['patient_code'])}</td>
+        <td>{$safe($patient['name'] ?? '')}</td>
+        <td>{$safe($patient['tb_case_number'])}</td>
+        <td>{$safe($patient['barangay'] ?? $ref['patient_barangay'])}</td>
       </tr>
     </table>
 
     <table>
       <tr><th colspan='4'>Referring (Sender)</th></tr>
       <tr>
-        <td><strong>Unit / Barangay</strong><br>". $safe($ref['referring_unit']) ."</td>
-        <td><strong>Tel</strong><br>". $safe($ref['referring_tel']) ."</td>
-        <td><strong>Email</strong><br>". $safe($ref['referring_email']) ."</td>
-        <td><strong>Address</strong><br>". $safe($ref['referring_address']) ."</td>
+        <td><strong>Unit / Barangay</strong><br>{$safe($ref['referring_unit'])}</td>
+        <td><strong>Tel</strong><br>{$safe($ref['referring_tel'])}</td>
+        <td><strong>Email</strong><br>{$safe($ref['referring_email'])}</td>
+        <td><strong>Address</strong><br>{$safe($ref['referring_address'])}</td>
       </tr>
     </table>
 
     <table>
       <tr><th>Reason for Referral</th></tr>
-      <tr><td><pre>". $safe($ref['reason_for_referral']) ."</pre></td></tr>
+      <tr><td><pre>{$safe($ref['reason_for_referral'])}</pre></td></tr>
       <tr><th>Details / Clinical Summary</th></tr>
-      <tr><td><pre>". $safe($ref['details']) ."</pre></td></tr>
+      <tr><td style='min-height:80px;'><pre>{$safe($ref['details'])}</pre></td></tr>
     </table>
 
     <table>
       <tr><th colspan='4'>Receiving (to be filled by receiving unit)</th></tr>
       <tr>
-        <td><strong>Barangay</strong><br>". $safe($ref['receiving_barangay']) ."</td>
-        <td><strong>Unit</strong><br>". $safe($ref['receiving_unit']) ."</td>
-        <td><strong>Officer</strong><br>". $safe($ref['receiving_officer']) ."</td>
-        <td><strong>Date Received</strong><br>". $safe(substr($ref['date_received'] ?? '', 0, 10)) ."</td>
+        <td><strong>Barangay</strong><br>{$safe($ref['receiving_barangay'])}</td>
+        <td><strong>Unit</strong><br>{$safe($ref['receiving_unit'])}</td>
+        <td><strong>Officer</strong><br>{$safe($ref['receiving_officer'])}</td>
+        <td><strong>Date Received</strong><br>{$safe(substr($ref['date_received'] ?? '', 0, 10))}</td>
       </tr>
     </table>
 
     <table>
       <tr><th>Action Taken</th></tr>
-      <tr>
-        <td>( ) Lab test <span class='line'>&nbsp;</span> performed, write date ____/____/____ and result ______________________________________</td>
-      </tr>
-      <tr>
-        <td>( ) Patient started/resumed treatment: Date Registered/Resumed ____/____/____ Regimen: ________________________</td>
-      </tr>
-      <tr>
-        <td>( ) Not treated — specify reasons: ________________________________________________________________________________</td>
-      </tr>
-      <tr>
-        <td>( ) Other, specify: ________________________________________________________________________________________________</td>
-      </tr>
-    </table>
-
-    <table>
+      <tr><td style='min-height:60px;'><pre>{$safe($ref['action_taken'])}</pre></td></tr>
       <tr><th>Remarks</th></tr>
-      <tr>
-        <td>Remarks: <span class='longline' style='min-width:100%;'>&nbsp;</span><br><br>
-        <span class='longline' style='min-width:100%;'>&nbsp;</span><br><br>
-        <span class='longline' style='min-width:100%;'>&nbsp;</span></td>
-      </tr>
+      <tr><td style='min-height:80px;'><pre>{$safe($ref['remarks'])}</pre></td></tr>
     </table>
 
     <div class='footer-note'>
@@ -129,86 +146,7 @@ return "
     </div>
   </div>
 </body>
-</html>
-";
+</html>";
   }
-  public static function generateContactsPDF($patient_id) {
-    require_once __DIR__ . '/../models/ContactModel.php';
-    require_once __DIR__ . '/../models/PatientModel.php';
 
-    $patient = PatientModel::getById($patient_id);
-    if (!$patient) exit('Patient not found');
-
-    $contacts = ContactModel::getByPatient($patient_id);
-
-    $html = self::renderContactsHTML($patient, $contacts);
-
-    $options = new \Dompdf\Options();
-    $options->set('isRemoteEnabled', true);
-    $dompdf = new \Dompdf\Dompdf($options);
-
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-
-    $dompdf->stream('Contacts_'.$patient['patient_code'].'.pdf', ['Attachment' => false]);
-    exit;
 }
-
-private static function renderContactsHTML($patient, $contacts) {
-    $safe = fn($x) => htmlspecialchars($x ?? '', ENT_QUOTES, 'UTF-8');
-
-    $rows = "";
-    foreach ($contacts as $c) {
-        $rows .= "
-          <tr>
-            <td>{$safe($c['name'])}</td>
-            <td>{$safe($c['age'])}</td>
-            <td>{$safe($c['contact_number'])}</td>
-            <td>{$safe($c['address'])}</td>
-          </tr>
-        ";
-    }
-
-    if (!$rows) {
-        $rows = "<tr><td colspan='4' style='text-align:center;color:#777;'>No contacts recorded.</td></tr>";
-    }
-
-    return "
-    <html>
-    <head>
-      <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size:12px; }
-        table { width:100%; border-collapse:collapse; margin-top:10px; }
-        th, td { border:1px solid #444; padding:6px; }
-        th { background:#eee; }
-        .header { text-align:center; font-size:18px; margin-bottom:15px; }
-        .sub { font-size:13px; margin-bottom:8px; }
-      </style>
-    </head>
-    <body>
-      <div class='header'>Close Contacts — TB-MAS Records</div>
-
-      <div class='sub'><strong>Patient:</strong> {$safe($patient['patient_code'])}</div>
-      <div class='sub'><strong>TB Case #:</strong> {$safe($patient['tb_case_number'])}</div>
-      <div class='sub'><strong>Barangay:</strong> {$safe($patient['barangay'])}</div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Contact #</th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          $rows
-        </tbody>
-      </table>
-
-    </body>
-    </html>";
-  }
-}
-?>

@@ -24,13 +24,7 @@ if (!isset($ref)) {
       <div class="mb-3">
         <label class="form-label">Patient</label>
         <?php
-        $patientInfo = '';
-        foreach ($patients as $p) {
-          if ($p['patient_id'] == $ref['patient_id']) {
-            $patientInfo = htmlspecialchars($p['patient_code']) . ' (' . htmlspecialchars($p['barangay']) . ')';
-            break;
-          }
-        }
+        $patientInfo = htmlspecialchars($ref['name'] ?? '') . ' (' . htmlspecialchars($ref['patient_code']) . ' - ' . htmlspecialchars($ref['patient_barangay'] ?? '') . ')';
         ?>
         <input type="text" class="form-control" value="<?=$patientInfo?>" disabled readonly>
         <input type="hidden" name="patient_id" value="<?=$ref['patient_id']?>">
