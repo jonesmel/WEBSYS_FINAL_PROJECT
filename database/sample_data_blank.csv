@@ -1,0 +1,11 @@
+name,email,age,sex,barangay,contact_number,philhealth_id,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history
+Beatriz Sanchez,beatriz.sanchez@email.com,32,F,Kias,,BC,P,DS,New
+Consuelo dela Cruz,consuelo.delacruz@email.com,38,F,Pines,,123456789012,CD,EP,DR,Retreatment
+Fernando Reyes,,27,M,Session Road,,345678901234,Unknown,P,Unknown,New
+Glenda Bautista,glenda.bautista@email.com,29,F,Bakakeng Sur,0915-111-2222,,BC,EP,DS,Retreatment
+Hector Valdez,,45,M,Fernando Estate,,456789012345,CD,P,DR,New
+Isabel Roman,roman.isabel@email.com,52,F,Road Bypass,,567890123456,Unknown,EP,Unknown,Retreatment
+Julio Mendoza,julio.mendoza@email.com,24,M,Sto. Tomas Proper,,678901234567,BC,P,DS,New
+Karen Santos,,31,F,Military Cut-off,,789012345678,CD,EP,DR,Retreatment
+Luis Aquino,luis.aquino@email.com,36,M,Sto. Tomas Central,,890123456789,Unknown,P,Unknown,New
+Mylene Torres,mylene.torres@email.com,28,F,Alfonso Tabora,,901234567890,BC,EP,DS,New

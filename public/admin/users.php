@@ -149,6 +149,9 @@ $barangays = BarangayHelper::getAll();
         </thead>
 
         <tbody class="patient-table-body">
+        <?php if (empty($patientUsers)): ?>
+        <tr><td colspan="5" class="text-center text-muted">No patient users found.</td></tr>
+        <?php else: ?>
         <?php foreach ($patientUsers as $u): ?>
           <tr>
             <td class="text-center"><?= htmlspecialchars($u['email']) ?></td>
@@ -165,6 +168,7 @@ $barangays = BarangayHelper::getAll();
             </td>
           </tr>
         <?php endforeach; ?>
+        <?php endif; ?>
         </tbody>
 
       </table>

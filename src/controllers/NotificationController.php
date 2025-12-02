@@ -8,9 +8,15 @@ class NotificationController {
         $uid = $_SESSION['user']['user_id'];
         $role = $_SESSION['user']['role'];
 
+        // Pagination logic
+        $perPage = 20;
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $offset = ($page - 1) * $perPage;
+
         if ($role === 'super_admin') {
             // super admin sees all notifications
-            $rows = NotificationModel::getAllWithUserInfo();
+            $totalCount = NotificationModel::getTotalNotifications();
+            $rows = NotificationModel::getAllWithUserInfo($perPage, $offset);
 
             // For super admin: mark all notifications as read EXCEPT staff follow-up type
             // Get all notification IDs for this admin that are NOT staff follow-up type
@@ -18,6 +24,7 @@ class NotificationController {
             $stmt = $pdo->prepare("
                 SELECT notification_id FROM notifications
                 WHERE user_id = ? AND type != 'staff_follow_up' AND is_read = 0
+                LIMIT " . intval($perPage) . " OFFSET " . intval($offset) . "
             ");
             $stmt->execute([$uid]);
             $notificationIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -29,8 +36,20 @@ class NotificationController {
         } else {
             // For regular users: mark all their notifications as read
             NotificationModel::markAllReadForUser($uid);
-            $rows = NotificationModel::getByUser($uid);
+            $totalCount = NotificationModel::getTotalNotificationsForUser($uid);
+            $rows = NotificationModel::getByUser($uid, $perPage, $offset);
         }
+
+        $totalPages = ceil($totalCount / $perPage);
+
+        // Pagination data for view
+        $pagination = [
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'total_records' => $totalCount,
+            'per_page' => $perPage,
+            'has_pagination' => $totalCount > $perPage
+        ];
 
         include __DIR__ . '/../../public/notifications/list.php';
     }
@@ -55,10 +74,22 @@ class NotificationController {
     public function mark_read() {
         AuthMiddleware::requireLogin();
         $id = $_GET['id'] ?? null;
-        if ($id) NotificationModel::markRead($id);
+
+        if ($id) {
+            // Check if this is a staff follow-up notification
+            $pdo = getDB();
+            $stmt = $pdo->prepare("SELECT type FROM notifications WHERE notification_id = ?");
+            $stmt->execute([$id]);
+            $notification = $stmt->fetch();
+
+            // Don't mark staff follow-up notifications as read
+            if ($notification && $notification['type'] !== 'staff_follow_up') {
+                NotificationModel::markRead($id);
+            }
+        }
 
         // Detect fetch() correctly
-        $isAjax = isset($_SERVER['HTTP_ACCEPT']) && 
+        $isAjax = isset($_SERVER['HTTP_ACCEPT']) &&
                 strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
 
         if ($isAjax) {
@@ -83,7 +114,39 @@ class NotificationController {
     public function mark_all_read() {
         AuthMiddleware::requireLogin();
         $uid = $_SESSION['user']['user_id'];
-        NotificationModel::markAllReadForUser($uid);
+        $role = $_SESSION['user']['role'];
+
+        if ($role === 'super_admin') {
+            // For super admin: mark all notifications as read EXCEPT staff follow-up type
+            // Get all notification IDs for this admin that are NOT staff follow-up type
+            $pdo = getDB();
+            $stmt = $pdo->prepare("
+                SELECT notification_id FROM notifications
+                WHERE user_id = ? AND type != 'staff_follow_up' AND is_read = 0
+            ");
+            $stmt->execute([$uid]);
+            $notificationIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Mark only non-staff-follow-up notifications as read
+            foreach ($notificationIds as $nid) {
+                NotificationModel::markRead($nid);
+            }
+        } else {
+            // For regular users: get all non-staff-follow-up notifications
+            $pdo = getDB();
+            $stmt = $pdo->prepare("
+                SELECT notification_id FROM notifications
+                WHERE user_id = ? AND type != 'staff_follow_up' AND is_read = 0
+            ");
+            $stmt->execute([$uid]);
+            $notificationIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Mark only non-staff-follow-up notifications as read
+            foreach ($notificationIds as $nid) {
+                NotificationModel::markRead($nid);
+            }
+        }
+
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             header('Content-Type: application/json');
             echo json_encode(['ok' => true]);

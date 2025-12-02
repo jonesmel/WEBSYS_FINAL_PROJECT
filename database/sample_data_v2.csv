@@ -1,0 +1,16 @@
+name,email,patient_code,age,sex,barangay,contact_number,philhealth_id,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history,treatment_outcome
+Ricardo Reyes,ricardo.reyes@email.com,PAT-2025-00011,28,M,Irisan,09351234567,567890123456,TBCASE-2025-00011,BC,P,DS,New,active
+Lourdes Mendoza,lourdes.mendoza@email.com,PAT-2025-00012,35,F,Bakakeng North,09362345678,,TBCASE-2025-00012,CD,EP,DR,Retreatment,cured
+Francisco Garcia,francisco.garcia@email.com,PAT-2025-00013,67,M,Guisad Central,09453456789,789012345678,TBCASE-2025-00013,Unknown,P,Unknown,New,active
+Cristina Navarro,cristina.navarro@email.com,PAT-2025-00014,19,F,Aurora Hill,09464567890,,TBCASE-2025-00014,BC,EP,DS,New,treatment_completed
+Eduardo Santos,eduardo.santos@email.com,PAT-2025-00015,53,M,Pacdal,09475678901,901234567890,TBCASE-2025-00015,CD,P,DR,Retreatment,active
+Amelia Castro,,PAT-2025-00016,41,F,Modern Site Central,09486789012,,TBCASE-2025-00016,Unknown,EP,Unknown,New,active
+Carlos Fernandez,carlos.fernandez@email.com,PAT-2025-00017,31,M,Happy Homes,09497890123,123456789012,TBCASE-2025-00017,BC,P,DS,New,active
+Teresa Aquino,teresa.aquino@email.com,PAT-2025-00018,59,F,Teachers Camp,09408901234,345678901234,TBCASE-2025-00018,CD,EP,DR,Retreatment,lost_to_followup
+Hernando dela Rosa,,PAT-2025-00019,72,M,Marys Peak,09419012345,,TBCASE-2025-00019,BC,P,DS,New,transferred_out
+Isabel Moreno,isabel.moreno@email.com,PAT-2025-00020,26,F,Fernandez Colony,09429123456,567890123456,TBCASE-2025-00020,Unknown,EP,Unknown,Retreatment,active
+Mario Bautista,mario.bautista@email.com,PAT-2025-00021,38,M,Camp 8,09439234567,789012345678,TBCASE-2025-00021,BC,P,DR,New,active
+Nenita Lim,nenita.lim@email.com,PAT-2025-00022,44,F,Alfonso Tabora,09449345678,901234567890,TBCASE-2025-00022,CD,EP,DS,Retreatment,failed
+Alfredo Mercado,,PAT-2025-00023,25,M,Fairy Hill,09459456789,,TBCASE-2025-00023,Unknown,P,Unknown,New,active
+Esperanza Flores,esperanza.flores@email.com,PAT-2025-00024,55,F,Governor Pack Road,09469567890,123456789012,TBCASE-2025-00024,BC,EP,DR,New,treatment_completed
+Benito Cruz,,PAT-2025-00025,61,M,Imelda Village,09479678901,345678901234,TBCASE-2025-00025,CD,P,DS,Retreatment,died

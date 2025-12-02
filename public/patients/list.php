@@ -95,6 +95,9 @@ require_once __DIR__.'/../partials/navbar.php';
           </tr>
         </thead>
         <tbody class="patients-table-body">
+          <?php if (empty($patients)): ?>
+          <tr><td colspan="10" class="text-center text-muted">No patients found.</td></tr>
+          <?php else: ?>
           <?php foreach ($patients as $p): ?>
           <tr>
             <td class="text-center"><?= htmlspecialchars($p['patient_code']) ?></td>
@@ -158,6 +161,7 @@ require_once __DIR__.'/../partials/navbar.php';
             </td>
           </tr>
           <?php endforeach; ?>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>

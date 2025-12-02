@@ -199,6 +199,7 @@ include __DIR__.'/../partials/navbar.php';
         </table>
       </div>
     </div>
+
   </div>
 </div>
 

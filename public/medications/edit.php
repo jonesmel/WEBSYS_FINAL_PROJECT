@@ -42,7 +42,7 @@ $patients = PatientModel::getAll();
         <select name="drugs" class="form-select" required>
           <option value="">-- Select Drug --</option>
           <?php foreach ($drugs as $d): ?>
-              <option value="<?=$d?>"><?=$d?></option>
+              <option value="<?=$d?>" <?= ($med['drugs'] == $d) ? 'selected' : '' ?>><?=$d?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -63,7 +63,14 @@ $patients = PatientModel::getAll();
         <textarea name="notes" class="form-control" rows="3"><?=htmlspecialchars($med['notes'])?></textarea>
       </div>
 
-      <button class="btn btn-success w-100">Update</button>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Update Medication
+        </button>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list" class="btn btn-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
+      </div>
     </form>
   </div>
 </div>

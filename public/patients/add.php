@@ -98,7 +98,14 @@ $barangays = BarangayHelper::getAll();
         </select>
       </div>
 
-      <button class="btn btn-primary">Save</button>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Create Patient
+        </button>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/index" class="btn btn-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
+      </div>
 
     </form>
   </div>

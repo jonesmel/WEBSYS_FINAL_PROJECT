@@ -59,7 +59,14 @@ $barangays = BarangayHelper::getAll();
         </select>
       </div>
 
-      <button class="btn btn-primary">Save Contact</button>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Add Contact
+        </button>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list" class="btn btn-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
+      </div>
     </form>
   </div>
 </div>

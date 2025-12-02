@@ -48,6 +48,11 @@ class ImportController {
                     continue;
                 }
 
+                if (PatientModel::existsByTbCaseNumber($data['tb_case_number'])) {
+                    $skipped++;
+                    continue;
+                }
+
                 $userId = null;
                 if (!empty($data['email'])) {
                     $existing = UserModel::getByEmail($data['email']);

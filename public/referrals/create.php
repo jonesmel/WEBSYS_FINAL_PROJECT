@@ -54,10 +54,22 @@ require_once __DIR__.'/../partials/navbar.php';
       </div>
     </div>
 
+    <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'super_admin'): ?>
+    <div class="mb-3">
+      <label class="form-label">Referring Address</label>
+      <select name="referring_address" class="form-select">
+        <option value="">-- Select Referring Address/Barangay --</option>
+        <?php foreach ($barangays as $b): ?>
+          <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <?php else: ?>
     <div class="mb-3">
       <label class="form-label">Referring Address</label>
       <input type="text" name="referring_address" class="form-control" placeholder="Address or notes (optional)">
     </div>
+    <?php endif; ?>
 
     <div class="mb-3">
       <label class="form-label">Referral Date</label>
@@ -84,8 +96,14 @@ require_once __DIR__.'/../partials/navbar.php';
       </select>
     </div>
 
-    <button class="btn btn-primary">Submit</button>
-    <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index" class="btn btn-secondary mt-3">← Back</a>
+    <div class="d-flex justify-content-end gap-2">
+      <button class="btn btn-primary">
+        <i class="bi bi-check-circle me-1"></i>Create Referral
+      </button>
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index" class="btn btn-secondary">
+        <i class="bi bi-x me-1"></i>Cancel
+      </a>
+    </div>
   </form>
 </div>
 

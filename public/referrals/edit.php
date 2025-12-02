@@ -104,11 +104,14 @@ if (!isset($ref)) {
         <textarea name="details" class="form-control" rows="3"><?= htmlspecialchars($ref['details']) ?></textarea>
       </div>
 
-      <button class="btn btn-primary">Update Referral</button>
-      <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=<?= $ref['referral_id'] ?>"
-         class="btn btn-secondary ms-2">
-         Cancel
-      </a>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Update Referral
+        </button>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=referral/view&id=<?= $ref['referral_id'] ?>" class="btn btn-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
+      </div>
 
     </form>
   </div>

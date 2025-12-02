@@ -98,8 +98,8 @@ class ExportController {
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        // Stream PDF
-        $dompdf->stream('patients_export_' . date('Ymd_His') . '.pdf', ["Attachment" => false]);
+        // Stream PDF - immediately download as attachment
+        $dompdf->stream('patients_export_' . date('Ymd_His') . '.pdf', ["Attachment" => true]);
         exit;
     }
 }

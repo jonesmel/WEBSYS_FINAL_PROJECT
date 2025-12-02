@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2025 at 12:56 AM
+-- Generation Time: Dec 02, 2025 at 11:21 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -203,8 +203,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `email`, `password_hash`, `role`, `barangay_assigned`, `is_verified`, `verification_token`, `password_reset_required`, `created_at`) VALUES
 (1, 'admin@tbmas.local', '$2y$10$UkkMNqqE2UyX5coiIhnu3emtwFw8lG21536ltcFK2CD1vxiy2b/iy', 'super_admin', NULL, 1, NULL, 0, '2025-11-16 09:24:13'),
-(2, 'tysalango@gmail.com', '$2y$10$hRMMiYkQy6DG063A.eaT0.yeapAhpJiIMRcclsR.7NYLH.t4npPUy', 'health_worker', 'Loakan Proper', 1, NULL, 0, '2025-12-01 19:00:56'),
-(3, 'tyronepaladin@gmail.com', '$2y$10$SwDKh1jZu0uDwyt92pMIzOrAum48o/jFk1MtRUZZtHEy60rxnRHy.', 'health_worker', 'Irisan', 1, NULL, 0, '2025-12-01 19:23:23');
+(2, 'tysalango@gmail.com', '$2y$10$fEZwDo7dZvb21kNz6QUvmeFtWztnpMLnVBCkAujCK3FC5GhyOi83C', 'health_worker', 'Loakan Proper', 1, NULL, 0, '2025-12-02 20:07:18'),
+(3, 'tyronepaladin@gmail.com', '$2y$10$EjpRUJIG.N4ZuvzUaHXJNeibiqd44lqNMqUhV0vctYy6yr2z3H38W', 'health_worker', 'Irisan', 1, NULL, 0, '2025-12-02 20:07:27');
 
 --
 -- Indexes for dumped tables

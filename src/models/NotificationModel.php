@@ -7,6 +7,7 @@ class NotificationModel {
     public static function create(array $data) {
         $pdo = getDB();
 
+        // Handle old notification_type field name for backward compatibility
         if (!empty($data['notification_type']) && empty($data['type'])) {
             $data['type'] = $data['notification_type'];
         }
@@ -92,28 +93,56 @@ class NotificationModel {
         ]);
     }
 
-    public static function getByUser($uid) {
+    public static function getByUser($uid, $limit = null, $offset = 0) {
         $pdo = getDB();
-        $stmt = $pdo->prepare("
+        $query = "
             SELECT n.*, u.email, u.role
             FROM notifications n
             LEFT JOIN users u ON u.user_id = n.user_id
             WHERE n.user_id = ?
             ORDER BY n.created_at DESC
-        ");
-        $stmt->execute([$uid]);
+        ";
+
+        $params = [$uid];
+
+        if ($limit !== null) {
+            $query .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
+        }
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
-    public static function getAllWithUserInfo() {
+    public static function getAllWithUserInfo($limit = null, $offset = 0) {
         $pdo = getDB();
-        $sql = "
+        $query = "
             SELECT n.*, u.email, u.role
             FROM notifications n
             LEFT JOIN users u ON u.user_id = n.user_id
             ORDER BY n.created_at DESC
         ";
-        return $pdo->query($sql)->fetchAll();
+
+        if ($limit !== null) {
+            $query .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
+        }
+
+        return $pdo->query($query)->fetchAll();
+    }
+
+    public static function getTotalNotifications() {
+        $pdo = getDB();
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM notifications");
+        $result = $stmt->fetch();
+        return $result['total'];
+    }
+
+    public static function getTotalNotificationsForUser($uid) {
+        $pdo = getDB();
+        $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM notifications WHERE user_id = ?");
+        $stmt->execute([$uid]);
+        $result = $stmt->fetch();
+        return $result['total'];
     }
 
     public static function getLatestForUser($uid, $limit = 10) {

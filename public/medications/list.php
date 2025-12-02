@@ -7,16 +7,23 @@ require_once __DIR__.'/../partials/navbar.php';
   <h3 class="mb-3">Medications</h3>
 
   <div class="d-flex justify-content-between align-items-end mb-3">
-    <!-- Add Medication button (aligned w/ search boxes) -->
-    <?php if ($_SESSION['user']['role'] !== 'patient'): ?>
-      <a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/add"
-         class="btn btn-primary"
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2">
+      <?php if ($_SESSION['user']['role'] !== 'patient'): ?>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/add"
+           class="btn btn-primary"
+           style="height: 38px; display: flex; align-items: center;">
+          Add Medication
+        </a>
+      <?php endif; ?>
+
+      <!-- Go to Compliance Tracking Button -->
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance"
+         class="btn btn-info btn-sm"
          style="height: 38px; display: flex; align-items: center;">
-        Add Medication
+        <i class="bi bi-check-circle me-1"></i>Compliance Tracking
       </a>
-    <?php else: ?>
-      <div></div>
-    <?php endif; ?>
+    </div>
 
     <!-- SEARCH + FILTERS -->
     <form class="d-flex gap-3 align-items-end"
@@ -63,6 +70,9 @@ require_once __DIR__.'/../partials/navbar.php';
             </tr>
           </thead>
           <tbody class="medications-table-body">
+            <?php if (empty($rows)): ?>
+            <tr><td colspan="8" class="text-center text-muted">No medications found.</td></tr>
+            <?php else: ?>
             <?php foreach ($rows as $m): ?>
               <tr>
                 <td class="text-center fw-bold text-primary">
@@ -90,6 +100,7 @@ require_once __DIR__.'/../partials/navbar.php';
                 <?php endif; ?>
               </tr>
             <?php endforeach; ?>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>

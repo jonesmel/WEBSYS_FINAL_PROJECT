@@ -10,8 +10,6 @@ class LogController {
 
         if (!empty($_GET['user_id'])) $filters['user_id'] = $_GET['user_id'];
         if (!empty($_GET['action']))  $filters['action'] = $_GET['action'];
-        if (!empty($_GET['from']))    $filters['from'] = $_GET['from'];
-        if (!empty($_GET['to']))      $filters['to'] = $_GET['to'];
 
         $rows = LogModel::getLogs($filters);
 

@@ -234,7 +234,97 @@ class PatientModel {
     return $stmt->fetch()['c'] > 0;
   }
 
+  public static function existsByTbCaseNumber($tbCaseNumber) {
+    if (empty($tbCaseNumber)) return false;
+    $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS c FROM patients WHERE tb_case_number=?");
+    $stmt->execute([$tbCaseNumber]);
+    return $stmt->fetch()['c'] > 0;
+  }
+
   public static function exportAll() {
     return self::getAll();
+  }
+
+  // Analytics methods for admin dashboard
+  public static function getAgeGroupStats() {
+    $pdo = getDB();
+    $stmt = $pdo->query("
+      SELECT
+        COUNT(CASE WHEN age BETWEEN 0 AND 18 THEN 1 END) as age_0_18,
+        COUNT(CASE WHEN age BETWEEN 19 AND 35 THEN 1 END) as age_19_35,
+        COUNT(CASE WHEN age BETWEEN 36 AND 55 THEN 1 END) as age_36_55,
+        COUNT(CASE WHEN age >= 56 THEN 1 END) as age_56_plus,
+        COUNT(CASE WHEN age IS NULL OR age = 0 THEN 1 END) as age_unknown
+      FROM patients
+    ");
+    return $stmt->fetch();
+  }
+
+  public static function getGenderStats() {
+    $pdo = getDB();
+    $stmt = $pdo->query("
+      SELECT
+        COUNT(CASE WHEN sex = 'M' THEN 1 END) as male,
+        COUNT(CASE WHEN sex = 'F' THEN 1 END) as female,
+        COUNT(CASE WHEN sex NOT IN ('M', 'F') OR sex IS NULL THEN 1 END) as unknown
+      FROM patients
+    ");
+    return $stmt->fetch();
+  }
+
+  public static function getTreatmentOutcomeStats() {
+    $pdo = getDB();
+    $stmt = $pdo->query("
+      SELECT
+        COUNT(CASE WHEN treatment_outcome = 'active' THEN 1 END) as active,
+        COUNT(CASE WHEN treatment_outcome = 'cured' THEN 1 END) as cured,
+        COUNT(CASE WHEN treatment_outcome = 'treatment_completed' THEN 1 END) as treatment_completed,
+        COUNT(CASE WHEN treatment_outcome = 'died' THEN 1 END) as died,
+        COUNT(CASE WHEN treatment_outcome = 'lost_to_followup' THEN 1 END) as lost_to_followup,
+        COUNT(CASE WHEN treatment_outcome = 'failed' THEN 1 END) as failed,
+        COUNT(CASE WHEN treatment_outcome = 'transferred_out' THEN 1 END) as transferred_out
+      FROM patients
+    ");
+    return $stmt->fetch();
+  }
+
+  public static function getMonthlyStats($months = 6) {
+    $pdo = getDB();
+    $months = intval($months); // Ensure it's an integer
+    $stmt = $pdo->prepare("
+      SELECT
+        DATE_FORMAT(created_at, '%Y-%m') as month,
+        COUNT(*) as patients
+      FROM patients
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL " . $months . " MONTH)
+      GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+      ORDER BY month DESC
+      LIMIT " . $months . "
+    ");
+    $stmt->execute();
+    $results = $stmt->fetchAll();
+
+    // Format for display
+    $formatted = [];
+    foreach ($results as $result) {
+      $date = DateTime::createFromFormat('Y-m', $result['month']);
+      $formatted[] = [
+        'month' => $date ? $date->format('M Y') : $result['month'],
+        'patients' => $result['patients']
+      ];
+    }
+    return $formatted;
+  }
+
+  public static function getBarangayStats() {
+    $pdo = getDB();
+    $stmt = $pdo->query("
+      SELECT barangay, COUNT(*) as count
+      FROM patients
+      GROUP BY barangay
+      ORDER BY count DESC
+    ");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 }

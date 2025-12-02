@@ -74,6 +74,9 @@ require_once __DIR__.'/../partials/navbar.php';
           </tr>
         </thead>
         <tbody class="contacts-table-body">
+        <?php if (empty($rows)): ?>
+        <tr><td colspan="7" class="text-center text-muted">No contacts found.</td></tr>
+        <?php else: ?>
         <?php foreach ($rows as $c): ?>
           <tr>
             <td class="text-center"><?=htmlspecialchars($c['contact_code'])?></td>
@@ -98,6 +101,7 @@ require_once __DIR__.'/../partials/navbar.php';
             </td>
           </tr>
         <?php endforeach; ?>
+        <?php endif; ?>
         </tbody>
       </table>
     </div>

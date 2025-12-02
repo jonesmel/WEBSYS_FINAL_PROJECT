@@ -145,10 +145,13 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
         <input type="text" name="outcome_notes" class="form-control" value="<?= htmlspecialchars($patient['outcome_notes'] ?? '') ?>" placeholder="Enter details...">
       </div>
 
-      <div class="text-end">
-        <button class="btn btn-primary">Save Changes</button>
-        <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?= $patient['patient_id'] ?>"
-           class="btn btn-secondary">Cancel</a>
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Save Changes
+        </button>
+        <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?= $patient['patient_id'] ?>" class="btn btn-secondary">
+          <i class="bi bi-x me-1"></i>Cancel
+        </a>
       </div>
 
     </form>

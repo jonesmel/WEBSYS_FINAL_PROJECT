@@ -31,123 +31,170 @@ class MedicationController {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = $_POST;
-            $data['created_by'] = $_SESSION['user']['user_id'];
-
-            // Create medication record
-            $id = MedicationModel::create($data);
-
-            $patient_id = intval($data['patient_id']);
-            $start_date = $data['start_date'] ?? null;
-
-            // 1) Create DB notification for patient (immediate) and attempt immediate email (will be sent only if verified)
-            NotificationModel::createForPatientUser(
-                $patient_id,
-                'medication_created',
-                'New Medication Added',
-                'A new medication schedule has been added to your record. Please check your medications list.',
-                "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications"
-            );
-
-            // 2) Notify health workers assigned to patient's barangay (DB + immediate email if verified)
-            $pdo = getDB();
-            $stmt = $pdo->prepare("SELECT barangay FROM patients WHERE patient_id = ?");
-            $stmt->execute([$patient_id]);
-            $barangay = $stmt->fetchColumn();
-
-            if ($barangay) {
-                $workers = UserModel::getHealthWorkersByBarangay($barangay);
-                foreach ($workers as $hw) {
-                    NotificationModel::create([
-                        'user_id' => $hw['user_id'],
-                        'patient_id' => $patient_id,
-                        'type' => 'medication_created_hw',
-                        'title' => 'Medication Added',
-                        'message' => 'A medication schedule was added for a patient in your barangay.',
-                        'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=" . $patient_id
-                    ]);
-                }
-            }
-
-            // 3) Set up compliance tracking dates
-            $compliance_deadline = !empty($data['end_date']) ? $data['end_date'] : date('Y-m-d', strtotime($start_date . ' +30 days'));
-
-            // Update medication with compliance tracking fields
-            MedicationModel::update($id, [
-                'drugs' => $data['drugs'],
+            $sharedData = [
+                'patient_id' => intval($data['patient_id']),
                 'start_date' => $data['start_date'],
-                'end_date' => $data['end_date'],
-                'notes' => $data['notes'],
-                'scheduled_for_date' => $start_date,
-                'compliance_deadline' => $compliance_deadline
-            ]);
+                'end_date' => $data['end_date'] ?? null,
+                'created_by' => $_SESSION['user']['user_id']
+            ];
 
-            // 4) Schedule reminders for patient - only create future notifications
-            if (!empty($start_date)) {
-                $today = date('Y-m-d');
-                $start_timestamp = strtotime($start_date);
-                $today_timestamp = strtotime($today);
+            // Handle multiple drugs - check if it's an array (new UI) or single drug (old UI)
+            $drugs = $data['drugs'] ?? [];
+            $notes = $data['notes'] ?? [];
 
-                // Only schedule if medication hasn't started yet
-                if ($start_timestamp >= $today_timestamp) {
+            // Backward compatibility: if drugs is not an array, treat it as single drug
+            if (!is_array($drugs)) {
+                $drugs = [$drugs];
+                $notes = [$notes];
+            }
 
-                    // 1 week before (7 days) - only if it's at least 8 days in future
-                    $one_week_before_timestamp = strtotime('-7 days', $start_timestamp);
-                    if ($one_week_before_timestamp >= $today_timestamp) {
-                        $one_week_before = date('Y-m-d 09:00:00', $one_week_before_timestamp);
-                        NotificationModel::create([
-                            'patient_id' => $patient_id,
-                            'type' => 'medication_week_reminder',
-                            'title' => 'Upcoming Medication Schedule',
-                            'message' => "Your medication begins in 1 week on ({$start_date}). Please prepare.",
-                            'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
-                            'scheduled_at' => $one_week_before
-                        ]);
-                    }
+            $createdIds = [];
+            $notificationSent = false;
 
-                    // 1 day before - only if it's at least 2 days in future
-                    $one_day_before_timestamp = strtotime('-1 day', $start_timestamp);
-                    if ($one_day_before_timestamp >= $today_timestamp) {
-                        $one_day_before = date('Y-m-d 09:00:00', $one_day_before_timestamp);
-                        NotificationModel::create([
-                            'patient_id' => $patient_id,
-                            'type' => 'medication_pre_reminder',
-                            'title' => 'Medication Reminder',
-                            'message' => "Your medication begins tomorrow ({$start_date}).",
-                            'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
-                            'scheduled_at' => $one_day_before
-                        ]);
-                    }
+            foreach ($drugs as $index => $drugName) {
+                if (empty($drugName)) continue; // Skip empty drugs
 
-                    // Same day - early morning
-                    $same_day = date('Y-m-d 08:00:00', $start_timestamp);
-                    NotificationModel::create([
-                        'patient_id' => $patient_id,
-                        'type' => 'medication_today',
-                        'title' => 'Medication Starts Today',
-                        'message' => "Your medication begins today ({$start_date}).",
-                        'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
-                        'scheduled_at' => $same_day
-                    ]);
+                // Create medication record for each drug
+                $medicationData = array_merge($sharedData, [
+                    'drugs' => $drugName,
+                    'notes' => $notes[$index] ?? ''
+                ]);
+
+                $id = MedicationModel::create($medicationData);
+                $createdIds[] = $id;
+
+                // Set up compliance tracking dates for this drug
+                $compliance_deadline = !empty($sharedData['end_date']) ?
+                    $sharedData['end_date'] :
+                    date('Y-m-d', strtotime($sharedData['start_date'] . ' +30 days'));
+
+                // Update medication with compliance tracking fields
+                MedicationModel::update($id, [
+                    'drugs' => $drugName,
+                    'start_date' => $sharedData['start_date'],
+                    'end_date' => $sharedData['end_date'],
+                    'notes' => $notes[$index] ?? '',
+                    'scheduled_for_date' => $sharedData['start_date'],
+                    'compliance_deadline' => $compliance_deadline
+                ]);
+
+                // Schedule reminders only once per patient (to avoid duplicate notifications)
+                if (!$notificationSent && !empty($sharedData['start_date'])) {
+                    $notificationSent = true;
+                    $this->scheduleMedicationReminders($sharedData['patient_id'], $sharedData['start_date']);
                 }
             }
 
-            LogModel::insertLog(
-                $_SESSION['user']['user_id'],
-                'create',
-                'medications',
-                $id,
-                null,
-                json_encode($data),
-                $_SERVER['REMOTE_ADDR'],
-                $_SERVER['HTTP_USER_AGENT'] ?? ''
-            );
+            $patient_id = $sharedData['patient_id'];
 
-            Flash::set('success', 'Medication added successfully.');
+            // 1) Create DB notification for patient (only once per patient)
+            if (!empty($createdIds)) {
+                NotificationModel::createForPatientUser(
+                    $patient_id,
+                    'medication_created',
+                    'New Medication Added',
+                    count($drugs) > 1 ?
+                        'New medication drugs have been added to your record. Please check your medications list.' :
+                        'A new medication schedule has been added to your record. Please check your medications list.',
+                    "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications"
+                );
+
+                // 2) Notify health workers assigned to patient's barangay
+                $pdo = getDB();
+                $stmt = $pdo->prepare("SELECT barangay FROM patients WHERE patient_id = ?");
+                $stmt->execute([$patient_id]);
+                $barangay = $stmt->fetchColumn();
+
+                if ($barangay) {
+                    $workers = UserModel::getHealthWorkersByBarangay($barangay);
+                    foreach ($workers as $hw) {
+                        NotificationModel::create([
+                            'user_id' => $hw['user_id'],
+                            'patient_id' => $patient_id,
+                            'type' => 'medication_created_hw',
+                            'title' => 'Medication Added',
+                            'message' => count($drugs) > 1 ?
+                                'Medication drugs were added for a patient in your barangay.' :
+                                'A medication schedule was added for a patient in your barangay.',
+                            'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=" . $patient_id
+                        ]);
+                    }
+                }
+
+                // 3) Log the action
+                LogModel::insertLog(
+                    $_SESSION['user']['user_id'],
+                    'create',
+                    'medications',
+                    $createdIds[0], // Use first ID for primary log
+                    null,
+                    json_encode([
+                        'multiple_drugs' => count($drugs),
+                        'created_ids' => $createdIds,
+                        'data' => $medicationData
+                    ]),
+                    $_SERVER['REMOTE_ADDR'],
+                    $_SERVER['HTTP_USER_AGENT'] ?? ''
+                );
+            }
+
+            $drugCount = count(array_filter($drugs)); // Count non-empty drugs
+            Flash::set('success', "Medication " . ($drugCount > 1 ? 'drugs' : 'drug') . " added successfully.");
             header("Location: /WEBSYS_FINAL_PROJECT/public/?route=medication/list");
             exit;
         }
 
         include __DIR__ . '/../../public/medications/add.php';
+    }
+
+    // Helper method to schedule medication reminders
+    private function scheduleMedicationReminders($patient_id, $start_date) {
+        $today = date('Y-m-d');
+        $start_timestamp = strtotime($start_date);
+        $today_timestamp = strtotime($today);
+
+        // Only schedule if medication hasn't started yet
+        if ($start_timestamp >= $today_timestamp) {
+
+            // 1 week before (7 days) - only if it's at least 8 days in future
+            $one_week_before_timestamp = strtotime('-7 days', $start_timestamp);
+            if ($one_week_before_timestamp >= $today_timestamp) {
+                $one_week_before = date('Y-m-d 09:00:00', $one_week_before_timestamp);
+                NotificationModel::create([
+                    'patient_id' => $patient_id,
+                    'type' => 'medication_week_reminder',
+                    'title' => 'Upcoming Medication Schedule',
+                    'message' => "Your medication begins in 1 week on ({$start_date}). Please prepare.",
+                    'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
+                    'scheduled_at' => $one_week_before
+                ]);
+            }
+
+            // 1 day before - only if it's at least 2 days in future
+            $one_day_before_timestamp = strtotime('-1 day', $start_timestamp);
+            if ($one_day_before_timestamp >= $today_timestamp) {
+                $one_day_before = date('Y-m-d 09:00:00', $one_day_before_timestamp);
+                NotificationModel::create([
+                    'patient_id' => $patient_id,
+                    'type' => 'medication_pre_reminder',
+                    'title' => 'Medication Reminder',
+                    'message' => "Your medication begins tomorrow ({$start_date}).",
+                    'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
+                    'scheduled_at' => $one_day_before
+                ]);
+            }
+
+            // Same day - early morning
+            $same_day = date('Y-m-d 08:00:00', $start_timestamp);
+            NotificationModel::create([
+                'patient_id' => $patient_id,
+                'type' => 'medication_today',
+                'title' => 'Medication Starts Today',
+                'message' => "Your medication begins today ({$start_date}).",
+                'link' => "/WEBSYS_FINAL_PROJECT/public/?route=patient/medications",
+                'scheduled_at' => $same_day
+            ]);
+        }
     }
 
     public function my_medications() {

@@ -11,7 +11,12 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Patient Details</h3>
-    <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/edit&id=<?=$patient['patient_id']?>" class="btn btn-warning">Edit</a>
+    <div class="d-flex gap-2">
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/edit&id=<?=$patient['patient_id']?>" class="btn btn-warning">Edit</a>
+      <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+      </a>
+    </div>
   </div>
 
   <div class="card shadow-sm p-4 mb-4">

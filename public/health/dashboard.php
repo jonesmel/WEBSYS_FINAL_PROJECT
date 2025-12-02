@@ -25,7 +25,10 @@ $pending = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
 
   <div class="mb-3">
     <a href="/WEBSYS_FINAL_PROJECT/public/?route=export/patients_csv" class="btn btn-outline-primary btn-sm">
-        Export Patients CSV
+        Export Patient Details (CSV)
+    </a>
+    <a href="/WEBSYS_FINAL_PROJECT/public/?route=export/patients_pdf" class="btn btn-outline-danger btn-sm ms-2">
+        <i class="bi bi-file-earmark-pdf me-1"></i>Export Patient Details (PDF)
     </a>
   </div>
 
@@ -77,7 +80,7 @@ $pending = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
               <?php foreach ($pending as $p): ?>
               <tr>
                 <td><?=htmlspecialchars($p['patient_id'])?></td>
-                <td><?=htmlspecialchars($p['notification_type'])?></td>
+                <td><?=htmlspecialchars($p['type'])?></td>
                 <td><?=htmlspecialchars($p['scheduled_at'])?></td>
               </tr>
               <?php endforeach; ?>

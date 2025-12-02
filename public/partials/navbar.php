@@ -7,6 +7,36 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
 <!-- Make sure Bootstrap Icons are loaded -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+<style>
+/* Nested dropdown for Medications - expand to the right */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-left: 0px;
+  margin-top: -1px;
+  display: none;
+}
+
+.dropdown-submenu:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-submenu .dropdown-toggle::after {
+  display: inline-block;
+  margin-left: .255em;
+  vertical-align: .255em;
+  content: "";
+  border-top: .3em solid;
+  border-right: .3em solid transparent;
+  border-bottom: 0;
+  border-left: .3em solid transparent;
+}
+</style>
+
 <nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
   <div class="container-fluid">
 
@@ -38,14 +68,13 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
           <!-- SUPER ADMIN -->
           <?php if ($user['role'] === 'super_admin'): ?>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=admin/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patient/index">Patients</a></li>
 
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">User Management</a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=patient/index">Patients</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=admin/users">Add Users</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=user/create_health_worker">Add Health Worker</a></li>
-                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=admin/profile">Profile</a></li>
               </ul>
             </li>
 
@@ -54,8 +83,14 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=contact/list">Contact Tracing</a></li>
                 <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=referral/index">Referrals</a></li>
-                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
-                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Medication Compliance</a></li>
+                <li class="dropdown-submenu">
+                  <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">Medications</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">View Medications</a></li>
+                    <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/add">Add Medication</a></li>
+                    <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Compliance Tracking</a></li>
+                  </ul>
+                </li>
               </ul>
             </li>
 
@@ -84,19 +119,30 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
               </ul>
             </li>
 
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">Medications</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Compliance</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">Medical Records</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/list">View Medications</a></li>
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=medication/compliance">Compliance Tracking</a></li>
+              </ul>
+            </li>
+
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=notification/list">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=health/profile">Profile</a></li>
           <?php endif; ?>
 
           <!-- PATIENT -->
           <?php if ($user['role'] === 'patient'): ?>
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/index">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/referrals">Referrals</a></li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">My Health</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/referrals">Referrals</a></li>
+                <li><a class="dropdown-item" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/medications">Medications</a></li>
+              </ul>
+            </li>
+
             <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/notifications">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/medications">Medications</a></li>
-            <li class="nav-item"><a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/profile">Profile</a></li>
           <?php endif; ?>
         <?php endif; ?>
       </ul>
@@ -104,6 +150,17 @@ require_once __DIR__ . '/../../src/models/NotificationModel.php';
       <!-- RIGHT SIDE -->
       <ul class="navbar-nav align-items-center">
         <?php if ($user): ?>
+
+          <!-- Profile Link -->
+          <li class="nav-item me-2">
+            <?php if ($user['role'] === 'super_admin'): ?>
+              <a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=admin/profile">Profile</a>
+            <?php elseif ($user['role'] === 'health_worker'): ?>
+              <a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=health/profile">Profile</a>
+            <?php elseif ($user['role'] === 'patient'): ?>
+              <a class="nav-link" href="/WEBSYS_FINAL_PROJECT/public/?route=patientdashboard/profile">Profile</a>
+            <?php endif; ?>
+          </li>
 
           <!-- Notification Bell -->
           <li class="nav-item dropdown me-2">
@@ -255,5 +312,19 @@ document.addEventListener("DOMContentLoaded", () => {
     loadNotifications();
     updateUnreadCount();
   }, 20000);
+
+  // Handle nested dropdown for Medications submenu
+  const medicationDropdown = document.querySelector('.dropdown-submenu .dropdown-toggle');
+  if (medicationDropdown) {
+    medicationDropdown.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const submenu = this.nextElementSibling;
+      if (submenu) {
+        submenu.classList.toggle('show');
+      }
+    });
+  }
 });
 </script>
