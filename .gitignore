@@ -1,6 +1,7 @@
 # Environment files
 config/env.php
 .env
+env.php
 
 # Composer
 /vendor/
@@ -9,10 +10,6 @@ composer.lock
 # Uploads
 public/uploads/*
 !public/uploads/.gitkeep
-
-# Logs
-*.log
-logs/
 
 # IDE
 .idea/
@@ -29,3 +26,4 @@ Thumbs.db
 tmp/
 temp/
 
+config/env.php

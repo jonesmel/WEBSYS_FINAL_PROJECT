@@ -183,7 +183,6 @@ include __DIR__.'/../partials/navbar.php';
               <th style="width:180px; min-width:140px;">Timestamp</th>
             </tr>
           </thead>
-
           <tbody class="audit-logs-table-body">
             <?php foreach ($rows as $log): ?>
             <tr>
