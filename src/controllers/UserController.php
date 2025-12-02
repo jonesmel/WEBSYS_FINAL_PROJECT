@@ -34,7 +34,9 @@ class UserController {
         );
 
         Flash::set('success','User deleted.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=admin/users");
+        // Redirect based on user role
+        $redirectRoute = ($user['role'] === 'health_worker') ? 'user/create_health_worker' : 'admin/users';
+        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=$redirectRoute");
         exit;
     }
 
