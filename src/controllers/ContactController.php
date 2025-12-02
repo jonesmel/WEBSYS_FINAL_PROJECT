@@ -71,33 +71,35 @@ class ContactController {
         $contact = ContactModel::getById($id);
         if (!$contact) { Flash::set('danger','Contact not found'); header("Location: /WEBSYS_FINAL_PROJECT/public/?route=contact/list"); exit; }
 
-        $newPatient = [
-            'patient_code'     => PatientModel::generatePatientCode(),
-            'age'              => $contact['age'],
-            'sex'              => $contact['sex'],
-            'barangay'         => $contact['barangay'] ?? 'Unknown',
-            'contact_number'   => $contact['contact_number'],
-            'created_by'       => $_SESSION['user']['user_id']
-        ];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Process form
+            $data = $_POST;
+            $data['created_by'] = $_SESSION['user']['user_id'];
+            $data['patient_code'] = PatientModel::generatePatientCode();
 
-        $newPatientId = PatientModel::create($newPatient);
+            $newPatientId = PatientModel::create($data);
 
-        // archive contact instead of delete to keep history
-        ContactModel::archive($id, $newPatientId);
+            // archive contact instead of delete to keep history
+            ContactModel::archive($id, $newPatientId);
 
-        LogModel::insertLog(
-            $_SESSION['user']['user_id'],
-            'convert_contact',
-            'contacts',
-            $id,
-            json_encode($contact),
-            json_encode(['converted_patient_id' => $newPatientId]),
-            $_SERVER['REMOTE_ADDR'],
-            $_SERVER['HTTP_USER_AGENT'] ?? ''
-        );
+            LogModel::insertLog(
+                $_SESSION['user']['user_id'],
+                'convert_contact',
+                'contacts',
+                $id,
+                json_encode($contact),
+                json_encode(['converted_patient_id' => $newPatientId, 'patient_data' => $data]),
+                $_SERVER['REMOTE_ADDR'],
+                $_SERVER['HTTP_USER_AGENT'] ?? ''
+            );
 
-        Flash::set('success','Contact converted to patient.');
-        header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=".$newPatientId);
-        exit;
+            Flash::set('success','Contact converted to patient.');
+            header("Location: /WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=".$newPatientId);
+            exit;
+        } else {
+            // Show form
+            $linkedPatient = PatientModel::getById($contact['patient_id']);
+            include __DIR__ . '/../../public/contacts/convert.php';
+        }
     }
 }

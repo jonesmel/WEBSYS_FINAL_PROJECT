@@ -56,6 +56,13 @@ class PatientModel {
   }
 
   public static function create($data) {
+      if (empty(trim($data['name'] ?? ''))) {
+          throw new PDOException("Patient name is required.");
+      }
+      if (empty(trim($data['barangay'] ?? ''))) {
+          throw new PDOException("Barangay is required.");
+      }
+
       $pdo = getDB();
       $userId = (!empty($data['user_id']) && is_numeric($data['user_id'])) ? $data['user_id'] : null;
 
