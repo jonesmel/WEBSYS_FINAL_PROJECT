@@ -72,9 +72,9 @@ class PatientModel {
       $sql = "INSERT INTO patients (
                 patient_code, name, age, sex, barangay, contact_number, philhealth_id,
                 tb_case_number, bacteriological_status, anatomical_site,
-                drug_susceptibility, treatment_history, created_by, user_id
+                drug_susceptibility, treatment_history, treatment_outcome, outcome_notes, created_by, user_id
               )
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       $stmt = $pdo->prepare($sql);
 
@@ -91,6 +91,8 @@ class PatientModel {
         $data['anatomical_site'] ?? 'Unknown',
         $data['drug_susceptibility'] ?? 'Unknown',
         $data['treatment_history'] ?? 'Unknown',
+        $data['treatment_outcome'] ?? 'active',
+        $data['outcome_notes'] ?? null,
         $data['created_by'] ?? null,
         $userId
       ]);
@@ -124,7 +126,7 @@ class PatientModel {
       return $stmt->fetch();
   }
 
-  public static function getAllFiltered($q = '', $barangay = '') {
+  public static function getAllFiltered($q = '', $barangay = '', $outcome = '') {
       $pdo = getDB();
       $sql = "SELECT * FROM patients WHERE 1=1 ";
       $params = [];
@@ -141,6 +143,10 @@ class PatientModel {
           $sql .= "AND barangay = ? ";
           $params[] = $barangay;
       }
+      if (!empty($outcome)) {
+          $sql .= "AND treatment_outcome = ? ";
+          $params[] = $outcome;
+      }
 
       $sql .= "ORDER BY created_at DESC";
       $stmt = $pdo->prepare($sql);
@@ -148,7 +154,7 @@ class PatientModel {
       return $stmt->fetchAll();
   }
 
-  public static function getAllByBarangayFiltered($b, $q = '') {
+  public static function getAllByBarangayFiltered($b, $q = '', $outcome = '') {
       if (empty($b)) return [];
       $pdo = getDB();
       $sql = "SELECT * FROM patients WHERE barangay = ? ";
@@ -161,6 +167,10 @@ class PatientModel {
           $params[] = $like;
           $params[] = $like;
           $params[] = $like; // philhealth_id search
+      }
+      if (!empty($outcome)) {
+          $sql .= "AND treatment_outcome = ? ";
+          $params[] = $outcome;
       }
 
       $sql .= "ORDER BY created_at DESC";
@@ -180,7 +190,7 @@ class PatientModel {
       $sql = "UPDATE patients SET
                 name=?, age=?, sex=?, barangay=?, contact_number=?, philhealth_id=?,
                 tb_case_number=?, bacteriological_status=?, anatomical_site=?,
-                drug_susceptibility=?, treatment_history=?
+                drug_susceptibility=?, treatment_history=?, treatment_outcome=?, outcome_notes=?
               WHERE patient_id=?";
 
       return $pdo->prepare($sql)->execute([
@@ -195,6 +205,8 @@ class PatientModel {
         $data['anatomical_site'] ?? 'Unknown',
         $data['drug_susceptibility'] ?? 'Unknown',
         $data['treatment_history'] ?? 'Unknown',
+        $data['treatment_outcome'] ?? 'active',
+        $data['outcome_notes'] ?? null,
         $id
       ]);
   }

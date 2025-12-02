@@ -11,16 +11,17 @@ class PatientController {
         AuthMiddleware::requireLogin();
         $user = $_SESSION['user'];
 
-        // Backend filtering: ?q=search&barangay=name
+        // Backend filtering: ?q=search&barangay=name&treatment_outcome=status
         $q = trim($_GET['q'] ?? '');
         $barangayFilter = trim($_GET['barangay'] ?? '');
+        $outcomeFilter = trim($_GET['treatment_outcome'] ?? '');
 
         if ($user['role'] === 'health_worker') {
-            // health_worker normally sees only own barangay; still allow q filter
-            $patients = PatientModel::getAllByBarangayFiltered($user['barangay_assigned'], $q);
+            // health_worker normally sees only own barangay; still allow q filter and outcome filter
+            $patients = PatientModel::getAllByBarangayFiltered($user['barangay_assigned'], $q, $outcomeFilter);
         } else {
             // super_admin sees all, optionally filtered
-            $patients = PatientModel::getAllFiltered($q, $barangayFilter);
+            $patients = PatientModel::getAllFiltered($q, $barangayFilter, $outcomeFilter);
         }
 
         $barangays = BarangayHelper::getAll();

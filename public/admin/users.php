@@ -107,13 +107,14 @@ $barangays = BarangayHelper::getAll();
     <form method="POST" class="row g-3" action="/WEBSYS_FINAL_PROJECT/public/?route=user/create_patient_user">
 
       <div class="col-md-6">
-        <label class="form-label">Select Patient (patient_code)</label>
+        <label class="form-label">Select Patient (Name, Code, Barangay)</label>
         <select name="patient_id" class="form-select" required>
           <option value="">-- Select --</option>
           <?php foreach ($patients as $p): ?>
             <option value="<?= $p['patient_id'] ?>">
-              <?= htmlspecialchars($p['patient_code']) ?>
-              <?= isset($p['barangay']) ? '(' . htmlspecialchars($p['barangay']) . ')' : '' ?>
+              <?= htmlspecialchars($p['name'] ?? '') ?>
+              (<?= htmlspecialchars($p['patient_code']) ?>
+              <?= isset($p['barangay']) ? ' - ' . htmlspecialchars($p['barangay']) . ')' : ')' ?>
             </option>
           <?php endforeach; ?>
         </select>

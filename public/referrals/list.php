@@ -26,9 +26,9 @@ require_once __DIR__.'/../partials/navbar.php';
       <!-- Search All Fields -->
       <div class="d-flex flex-column" style="width: 250px;">
         <label class="form-label mb-1">Search All Fields</label>
-        <input name="q"
+      <input name="q"
                class="form-control"
-               placeholder="Referral code, patient code, status, dates, etc."
+               placeholder="Referral code, patient name/code, status, dates, details, etc."
                value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
       </div>
 
@@ -80,7 +80,7 @@ require_once __DIR__.'/../partials/navbar.php';
         <thead class="table-light">
           <tr style="text-align: center;">
             <th>Referral Code</th>
-            <th>Patient Code</th>
+            <th>Patient (Code)</th>
             <th>Sender Barangay</th>
             <th>Receiving Barangay</th>
             <th>Status</th>
@@ -92,7 +92,7 @@ require_once __DIR__.'/../partials/navbar.php';
           <?php if ($rows): foreach ($rows as $r): ?>
             <tr>
               <td class="text-center"><?= htmlspecialchars($r['referral_code']) ?></td>
-              <td class="text-center"><?= htmlspecialchars($r['patient_code']) ?></td>
+              <td class="text-center"><?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['patient_code']) ?>)</td>
               <td class="text-center"><?= htmlspecialchars($r['referring_unit']) ?></td>
               <td class="text-center"><?= htmlspecialchars($r['receiving_barangay']) ?></td>
               <td class="text-center">

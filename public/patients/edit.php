@@ -127,6 +127,24 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
         </select>
       </div>
 
+      <div class="mb-3">
+        <label class="form-label">Treatment Outcome</label>
+        <select name="treatment_outcome" id="treatment_outcome" class="form-select">
+          <option value="active" <?= $patient['treatment_outcome']=='active'?'selected':'' ?>>Active</option>
+          <option value="cured" <?= $patient['treatment_outcome']=='cured'?'selected':'' ?>>Cured</option>
+          <option value="treatment_completed" <?= $patient['treatment_outcome']=='treatment_completed'?'selected':'' ?>>Treatment Completed</option>
+          <option value="died" <?= $patient['treatment_outcome']=='died'?'selected':'' ?>>Died</option>
+          <option value="lost_to_followup" <?= $patient['treatment_outcome']=='lost_to_followup'?'selected':'' ?>>Lost to Follow-Up</option>
+          <option value="failed" <?= $patient['treatment_outcome']=='failed'?'selected':'' ?>>Failed</option>
+          <option value="transferred_out" <?= $patient['treatment_outcome']=='transferred_out'?'selected':'' ?>>Transferred Out</option>
+        </select>
+      </div>
+
+      <div class="mb-3" id="outcome-notes-container" style="display: none;">
+        <label class="form-label" id="outcome-notes-label">Additional Notes</label>
+        <input type="text" name="outcome_notes" class="form-control" value="<?= htmlspecialchars($patient['outcome_notes'] ?? '') ?>" placeholder="Enter details...">
+      </div>
+
       <div class="text-end">
         <button class="btn btn-primary">Save Changes</button>
         <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?= $patient['patient_id'] ?>"
@@ -136,5 +154,35 @@ $hasPendingRef = ReferralModel::patientHasPending($patient['patient_id']);
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const outcomeSelect = document.getElementById('treatment_outcome');
+  const notesContainer = document.getElementById('outcome-notes-container');
+  const notesLabel = document.getElementById('outcome-notes-label');
+
+  const labels = {
+    'died': 'Cause of Death',
+    'failed': 'Reason for Failure',
+    'lost_to_followup': 'Circumstances of Loss',
+    'transferred_out': 'Transfer Destination'
+  };
+
+  function toggleNotes() {
+    const value = outcomeSelect.value;
+    if (labels[value]) {
+      notesContainer.style.display = 'block';
+      notesLabel.textContent = labels[value];
+    } else {
+      notesContainer.style.display = 'none';
+      notesLabel.textContent = 'Additional Notes';
+    }
+  }
+
+  outcomeSelect.addEventListener('change', toggleNotes);
+  // Initialize on page load
+  toggleNotes();
+});
+</script>
 
 <?php include __DIR__.'/../partials/footer.php'; ?>

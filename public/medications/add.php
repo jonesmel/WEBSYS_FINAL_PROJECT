@@ -20,9 +20,9 @@ include __DIR__ . '/../partials/navbar.php';
             } else {
                 $patients = PatientModel::getAll();
             }
-            foreach ($patients as $p):
+          foreach ($patients as $p):
           ?>
-            <option value="<?=$p['patient_id']?>"><?=$p['patient_code']?> (<?=$p['barangay']?>)</option>
+            <option value="<?=$p['patient_id']?>"><?=$p['name'] ?? ''?> (<?=$p['patient_code']?>)</option>
           <?php endforeach; ?>
         </select>
       </div>

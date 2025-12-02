@@ -10,7 +10,8 @@ include __DIR__.'/../partials/navbar.php';
 
   <div class="alert alert-info">
     Upload a CSV file using the exact template:<br>
-    <code>patient_code,email,age,sex,barangay,contact_number,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history</code>
+    <code>name,email,patient_code,age,sex,barangay,contact_number,philhealth_id,tb_case_number,bacteriological_status,anatomical_site,drug_susceptibility,treatment_history,treatment_outcome,outcome_notes</code>
+    <br><small>Note: patient_code and tb_case_number can be left empty for auto-generation. treatment_outcome defaults to 'active' if not specified. outcome_notes is optional and may be left blank. email and philhealth_id are optional.</small>
   </div>
 
   <div class="card shadow-sm p-4">

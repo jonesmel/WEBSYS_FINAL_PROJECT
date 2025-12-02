@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mapping = {
     'health_workers':      { endpoint: 'fetch_health_workers',      tbody: '.hw-table-body',            cols: 4 },
     'patient_users':       { endpoint: 'fetch_patient_users',       tbody: '.patient-table-body',       cols: 5 },
-    'patients':            { endpoint: 'fetch_patients',             tbody: '.patients-table-body',      cols: 8 },
+    'patients':            { endpoint: 'fetch_patients',             tbody: '.patients-table-body',      cols: 10 },
     'contacts':            { endpoint: 'fetch_contacts',             tbody: '.contacts-table-body',      cols: 7 },
     'medications':         { endpoint: 'fetch_medications',          tbody: '.medications-table-body',   cols: 6 },
     'referrals':           { endpoint: 'fetch_referrals',            tbody: '.referrals-table-body',     cols: 7 },
@@ -597,6 +597,23 @@ document.addEventListener('DOMContentLoaded', () => {
               } else {
                 philId = '-';
               }
+              // format treatment outcome badge
+              const outcomes = {
+                'active': 'Active',
+                'cured': 'Cured',
+                'treatment_completed': 'Completed',
+                'died': 'Died',
+                'lost_to_followup': 'Lost',
+                'failed': 'Failed',
+                'transferred_out': 'Transferred'
+              };
+              const status = outcomes[p.treatment_outcome] || p.treatment_outcome;
+              let badgeClass = '';
+              if (p.treatment_outcome === 'active') badgeClass = 'bg-primary';
+              else if (['cured', 'treatment_completed'].includes(p.treatment_outcome)) badgeClass = 'bg-success';
+              else if (p.treatment_outcome === 'died') badgeClass = 'bg-danger';
+              else badgeClass = 'bg-warning';
+              const statusBadge = `<span class="badge ${badgeClass} text-white">${escapeHtml(status)}</span>`;
               // render action buttons (delete only if window.USER_ROLE === 'super_admin', otherwise omit)
               let deleteBtn = '';
               if (window && window.USER_ROLE === 'super_admin') {
@@ -604,10 +621,12 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               html += `<tr>
                 <td class="text-center">${escapeHtml(p.patient_code || '')}</td>
+                <td class="text-center">${escapeHtml(p.name || '')}</td>
                 <td class="text-center">${escapeHtml(p.barangay || '')}</td>
                 <td class="text-center">${escapeHtml(String(p.age || ''))}</td>
                 <td class="text-center">${escapeHtml(p.sex || '')}</td>
                 <td class="text-center">${escapeHtml(p.tb_case_number || '')}</td>
+                <td class="text-center">${statusBadge}</td>
                 <td class="text-center">${escapeHtml(philId)}</td>
                 <td class="text-center">${acct}</td>
                 <td class="text-center"><div class="action-buttons d-flex justify-content-center gap-1"><a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=${p.patient_id}" class="btn btn-sm btn-outline-primary">View</a>${deleteBtn}</div></td>
@@ -617,28 +636,24 @@ document.addEventListener('DOMContentLoaded', () => {
             data.forEach(c => {
               html += `<tr>
                 <td class="text-center">${escapeHtml(c.contact_code)}</td>
-                <td class="text-center">${escapeHtml(c.patient_code)}</td>
                 <td class="text-center">${escapeHtml(c.barangay)}</td>
                 <td class="text-center">
-                  <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=${escapeHtml(c.patient_id || '')}"
-                    class="btn btn-sm btn-link">
-                    ${escapeHtml(c.patient_code)}
-                  </a>
+                  ${c.patient_id ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=${escapeHtml(c.patient_id)}" class="btn btn-sm btn-link">${escapeHtml(c.name || '')} (${escapeHtml(c.patient_code)})</a>` : '<em class="text-muted small">None</em>'}
                 </td>
                 <td class="text-center">${escapeHtml(c.age || '')}</td>
                 <td class="text-center">${escapeHtml(c.sex || '')}</td>
                 <td class="text-center">${escapeHtml(c.status)}</td>
                 <td class="text-center">
-                  ${c.status !== 'converted_patient' ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route=contact/convert&id=${c.contact_id}" class="btn btn-sm btn-outline-warning">Convert</a>` : ''}
+                  ${c.status !== 'converted_patient' ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route/contact/convert&id=${c.contact_id}" class="btn btn-sm btn-outline-warning">Convert</a>` : ''}
                 </td>
               </tr>`;
             });
           } else if (type === 'medications') {
             data.forEach(m => {
-              const deleteBtn = (window && window.USER_ROLE !== 'patient') ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/delete&id=${m.medication_id}" onclick="return confirm('Delete medication?');" class="btn btn-sm btn-danger">Delete</a>` : '';
-              const editBtn = (window && window.USER_ROLE !== 'patient') ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route=medication/edit&id=${m.medication_id}" class="btn btn-sm btn-warning">Edit</a>` : '';
+              const deleteBtn = (window && window.USER_ROLE !== 'patient') ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route/medication/delete&id=${m.medication_id}" onclick="return confirm('Delete medication?');" class="btn btn-sm btn-danger">Delete</a>` : '';
+              const editBtn = (window && window.USER_ROLE !== 'patient') ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route/medication/edit&id=${m.medication_id}" class="btn btn-sm btn-warning">Edit</a>` : '';
               html += `<tr>
-                <td class="text-center">${escapeHtml(m.patient_code)}</td>
+                <td class="text-center">${escapeHtml(m.name || '')} (${escapeHtml(m.patient_code)})</td>
                 <td class="text-center">${escapeHtml(m.drugs || '')}</td>
                 <td class="text-center">${escapeHtml(m.start_date || '')}</td>
                 <td class="text-center">${escapeHtml(m.end_date || '')}</td>
@@ -654,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const deleteBtn = (window && window.USER_ROLE === 'super_admin') ? `<a href="/WEBSYS_FINAL_PROJECT/public/?route/referral/delete&id=${r.referral_id}" onclick="return confirm('Delete this referral?');" class="btn btn-sm btn-danger">Delete</a>` : '';
               html += `<tr>
                 <td class="text-center">${escapeHtml(r.referral_code)}</td>
-                <td class="text-center">${escapeHtml(r.patient_code)}</td>
+                <td class="text-center">${escapeHtml(r.name || '')} (${escapeHtml(r.patient_code)})</td>
                 <td class="text-center">${escapeHtml(r.referring_unit || '')}</td>
                 <td class="text-center">${escapeHtml(r.receiving_barangay || '')}</td>
                 <td class="text-center">${statusBadge}</td>

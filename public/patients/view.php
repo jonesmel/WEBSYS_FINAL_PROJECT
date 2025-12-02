@@ -47,6 +47,25 @@ AuthMiddleware::requireRole(['super_admin','health_worker']);
     <div class="mb-3">
       <strong>Treatment History:</strong><br><?=$patient['treatment_history']?>
     </div>
+
+    <div class="mb-3">
+      <strong>Treatment Outcome:</strong><br>
+      <?php
+      $outcomes = [
+        'active' => 'Active',
+        'cured' => 'Cured',
+        'treatment_completed' => 'Treatment Completed',
+        'died' => 'Died',
+        'lost_to_followup' => 'Lost to Follow-Up',
+        'failed' => 'Failed',
+        'transferred_out' => 'Transferred Out'
+      ];
+      echo $outcomes[$patient['treatment_outcome']] ?? $patient['treatment_outcome'];
+      ?>
+      <?php if (!empty($patient['outcome_notes'])): ?>
+        <br><small class="text-muted">Details: <?= htmlspecialchars($patient['outcome_notes']) ?></small>
+      <?php endif; ?>
+    </div>
   </div>
 
   <!-- Linked modules: Referrals, Contacts, Medications -->

@@ -30,7 +30,7 @@ require_once __DIR__.'/../partials/navbar.php';
         <input name="q"
                value="<?=htmlspecialchars($_GET['q'] ?? '')?>"
                class="form-control"
-               placeholder="Contact code, patient code, age, sex, status, dates, etc.">
+               placeholder="Contact code, patient name/code, age, sex, status, relationship, etc.">
       </div>
 
       <!-- Barangay Filter -->
@@ -66,7 +66,7 @@ require_once __DIR__.'/../partials/navbar.php';
           <tr style="text-align: center;">
             <th>Contact Code</th>
             <th>Barangay</th>
-            <th>Linked Patient</th>
+            <th>Linked Patient (Code)</th>
             <th>Age</th>
             <th>Sex</th>
             <th>Status</th>
@@ -82,7 +82,7 @@ require_once __DIR__.'/../partials/navbar.php';
               <?php if (!empty($c['patient_id'])): ?>
                 <a href="/WEBSYS_FINAL_PROJECT/public/?route=patient/view&id=<?=$c['patient_id']?>"
                   class="btn btn-sm btn-link">
-                  <?= htmlspecialchars($c['patient_code']) ?>
+                  <?= htmlspecialchars($c['name'] ?? '') ?> (<?= htmlspecialchars($c['patient_code']) ?>)
                 </a>
               <?php else: ?>
                 <em class="text-muted small">None</em>

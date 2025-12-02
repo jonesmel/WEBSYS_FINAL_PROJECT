@@ -43,8 +43,25 @@ class UserModel {
         return $stmt->execute([$uid]);
     }
 
-    public static function createPatientUser($email, $plain, $token) {
+    public static function createPatientUser($email, $plain, $token, $patient_id = null) {
         if (self::emailExists($email)) return false;
+
+        // Check patient treatment outcome if patient_id provided
+        if ($patient_id) {
+            $pdo = getDB();
+
+            // Get patient's treatment outcome
+            $outcomeStmt = $pdo->prepare("SELECT treatment_outcome FROM patients WHERE patient_id = ?");
+            $outcomeStmt->execute([$patient_id]);
+            $patient = $outcomeStmt->fetch();
+
+            if ($patient) {
+                // Prevent account creation for deceased patients
+                if ($patient['treatment_outcome'] === 'died') {
+                    return false; // Cannot create account for deceased patients
+                }
+            }
+        }
 
         $pdo = getDB();
         $hash = password_hash($plain, PASSWORD_DEFAULT);

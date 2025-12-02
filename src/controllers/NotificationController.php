@@ -8,14 +8,27 @@ class NotificationController {
         $uid = $_SESSION['user']['user_id'];
         $role = $_SESSION['user']['role'];
 
-        // ALWAYS mark all for THIS USER as read
-        NotificationModel::markAllReadForUser($uid);
-
         if ($role === 'super_admin') {
             // super admin sees all notifications
             $rows = NotificationModel::getAllWithUserInfo();
+
+            // For super admin: mark all notifications as read EXCEPT staff follow-up type
+            // Get all notification IDs for this admin that are NOT staff follow-up type
+            $pdo = getDB();
+            $stmt = $pdo->prepare("
+                SELECT notification_id FROM notifications
+                WHERE user_id = ? AND type != 'staff_follow_up' AND is_read = 0
+            ");
+            $stmt->execute([$uid]);
+            $notificationIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Mark only non-staff-follow-up notifications as read
+            foreach ($notificationIds as $nid) {
+                NotificationModel::markRead($nid);
+            }
         } else {
-            // others see only theirs
+            // For regular users: mark all their notifications as read
+            NotificationModel::markAllReadForUser($uid);
             $rows = NotificationModel::getByUser($uid);
         }
 

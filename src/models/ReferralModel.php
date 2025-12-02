@@ -40,7 +40,7 @@ class ReferralModel {
 
   public static function getById($id) {
     $stmt = getDB()->prepare('
-      SELECT r.*, p.patient_code, p.tb_case_number AS patient_tb_case, p.barangay AS patient_barangay
+      SELECT r.*, p.patient_code, p.name, p.tb_case_number AS patient_tb_case, p.barangay AS patient_barangay
       FROM referrals r
       LEFT JOIN patients p ON p.patient_id = r.patient_id
       WHERE r.referral_id = ?
@@ -51,21 +51,22 @@ class ReferralModel {
 
   public static function getAll() {
     return getDB()
-      ->query('SELECT r.*, p.patient_code 
-               FROM referrals r 
-               LEFT JOIN patients p ON p.patient_id = r.patient_id 
+      ->query('SELECT r.*, p.patient_code, p.name
+               FROM referrals r
+               LEFT JOIN patients p ON p.patient_id = r.patient_id
                ORDER BY r.created_at DESC')
       ->fetchAll();
   }
 
   public static function getAllFiltered($q = '', $receiving_barangay = '', $status = '') {
     $pdo = getDB();
-    $sql = "SELECT r.*, p.patient_code FROM referrals r LEFT JOIN patients p ON p.patient_id = r.patient_id WHERE 1=1 ";
+    $sql = "SELECT r.*, p.patient_code, p.name FROM referrals r LEFT JOIN patients p ON p.patient_id = r.patient_id WHERE 1=1 ";
     $params = [];
 
     if (!empty($q)) {
-        $sql .= "AND (r.referral_code LIKE ? OR p.patient_code LIKE ? OR r.details LIKE ?) ";
+        $sql .= "AND (r.referral_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR r.details LIKE ?) ";
         $like = '%' . $q . '%';
+        $params[] = $like;
         $params[] = $like;
         $params[] = $like;
         $params[] = $like;
@@ -93,10 +94,10 @@ class ReferralModel {
 
   public static function getAllBySender($userId) {
     $stmt = getDB()->prepare('
-        SELECT r.*, p.patient_code 
-        FROM referrals r 
-        LEFT JOIN patients p ON p.patient_id = r.patient_id 
-        WHERE r.created_by = ? 
+        SELECT r.*, p.patient_code, p.name
+        FROM referrals r
+        LEFT JOIN patients p ON p.patient_id = r.patient_id
+        WHERE r.created_by = ?
         ORDER BY r.created_at DESC
     ');
     $stmt->execute([$userId]);
@@ -106,7 +107,7 @@ class ReferralModel {
   // Health worker = referring_unit is their barangay
   public static function getSentByBarangay($barangay) {
     $stmt = getDB()->prepare('
-      SELECT r.*, p.patient_code
+      SELECT r.*, p.patient_code, p.name
       FROM referrals r
       LEFT JOIN patients p ON p.patient_id=r.patient_id
       WHERE r.referring_unit = ?
@@ -119,7 +120,7 @@ class ReferralModel {
   public static function getIncomingForBarangay($barangay) {
     $pdo = getDB();
     $stmt = $pdo->prepare("
-        SELECT r.*, p.patient_code
+        SELECT r.*, p.patient_code, p.name
         FROM referrals r
         JOIN patients p ON p.patient_id = r.patient_id
         WHERE r.receiving_barangay = ?
@@ -185,7 +186,7 @@ class ReferralModel {
   public static function getReceivedByBarangay($barangay) {
     $pdo = getDB();
     $stmt = $pdo->prepare("
-        SELECT r.*, p.patient_code
+        SELECT r.*, p.patient_code, p.name
         FROM referrals r
         JOIN patients p ON p.patient_id = r.patient_id
         WHERE r.receiving_barangay = ?

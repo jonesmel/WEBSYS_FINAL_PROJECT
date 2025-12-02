@@ -65,7 +65,7 @@ class ContactModel {
   public static function getAll() {
       $pdo = getDB();
       $sql = "
-          SELECT c.*, p.patient_code, p.barangay AS patient_barangay
+          SELECT c.*, p.patient_code, p.name, p.barangay AS patient_barangay
           FROM contacts c
           LEFT JOIN patients p ON p.patient_id = c.patient_id
           WHERE c.is_archived = 0
@@ -77,16 +77,16 @@ class ContactModel {
   public static function getAllFiltered($q = '', $barangay = '') {
       $pdo = getDB();
       $sql = "
-          SELECT c.*, p.patient_code, p.barangay AS patient_barangay
+          SELECT c.*, p.patient_code, p.name, p.barangay AS patient_barangay
           FROM contacts c
           LEFT JOIN patients p ON p.patient_id = c.patient_id
           WHERE c.is_archived = 0
       ";
       $params = [];
       if (!empty($q)) {
-          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ?)";
+          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR c.relationship LIKE ?)";
           $like = '%' . $q . '%';
-          $params[] = $like; $params[] = $like; $params[] = $like;
+          $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
       }
       if (!empty($barangay)) {
           $sql .= " AND c.barangay = ?";
@@ -101,7 +101,7 @@ class ContactModel {
   public static function getByBarangay($barangay) {
       $pdo = getDB();
       $stmt = $pdo->prepare("
-          SELECT c.*, p.patient_code
+          SELECT c.*, p.patient_code, p.name
           FROM contacts c
           JOIN patients p ON p.patient_id = c.patient_id
           WHERE p.barangay = ? AND c.is_archived = 0
@@ -114,16 +114,16 @@ class ContactModel {
   public static function getByBarangayFiltered($barangay, $q = '') {
       $pdo = getDB();
       $sql = "
-          SELECT c.*, p.patient_code
+          SELECT c.*, p.patient_code, p.name
           FROM contacts c
           JOIN patients p ON p.patient_id = c.patient_id
           WHERE p.barangay = ? AND c.is_archived = 0
       ";
       $params = [$barangay];
       if (!empty($q)) {
-          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR c.relationship LIKE ?)";
+          $sql .= " AND (c.contact_code LIKE ? OR p.patient_code LIKE ? OR p.name LIKE ? OR c.relationship LIKE ?)";
           $like = '%' . $q . '%';
-          $params[] = $like; $params[] = $like; $params[] = $like;
+          $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
       }
       $sql .= " ORDER BY c.created_at DESC";
       $stmt = $pdo->prepare($sql);

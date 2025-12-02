@@ -34,11 +34,11 @@ require_once __DIR__.'/../partials/navbar.php';
           <input name="q"
                 value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
                 class="form-control"
-                placeholder="Patient code, TB case, age, sex, etc.">
+                placeholder="Patient name/code, TB case, philhealth, etc.">
         </div>
 
         <!-- Barangay Filter -->
-        <div class="d-flex flex-column" style="width: 250px;">
+        <div class="d-flex flex-column" style="width: 200px;">
           <label class="form-label mb-1">Filter by Barangay</label>
           <select name="barangay" class="form-select" data-placeholder="Search barangay...">
             <option value="">All Barangays</option>
@@ -48,6 +48,21 @@ require_once __DIR__.'/../partials/navbar.php';
                 <?= htmlspecialchars($b) ?>
               </option>
             <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- Treatment Outcome Filter -->
+        <div class="d-flex flex-column" style="width: 200px;">
+          <label class="form-label mb-1">Filter by Status</label>
+          <select name="treatment_outcome" class="form-select">
+            <option value="">All Status</option>
+            <option value="active" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'active') ? 'selected' : '' ?>>Active</option>
+            <option value="cured" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'cured') ? 'selected' : '' ?>>Cured</option>
+            <option value="treatment_completed" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'treatment_completed') ? 'selected' : '' ?>>Treatment Completed</option>
+            <option value="died" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'died') ? 'selected' : '' ?>>Died</option>
+            <option value="lost_to_followup" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'lost_to_followup') ? 'selected' : '' ?>>Lost to Follow-Up</option>
+            <option value="failed" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'failed') ? 'selected' : '' ?>>Failed</option>
+            <option value="transferred_out" <?= (isset($_GET['treatment_outcome']) && $_GET['treatment_outcome'] === 'transferred_out') ? 'selected' : '' ?>>Transferred Out</option>
           </select>
         </div>
 
@@ -73,6 +88,7 @@ require_once __DIR__.'/../partials/navbar.php';
             <th style="width:60px; min-width:50px;">Age</th>
             <th style="width:60px; min-width:45px;">Sex</th>
             <th style="width:160px; min-width:120px;">Case #</th>
+            <th style="width:100px; min-width:80px;">Status</th>
             <th style="width:140px; min-width:120px;">PhilHealth ID</th>
             <th style="width:120px; min-width:100px;">User Account</th>
             <th style="width:140px; min-width:120px;">Actions</th>
@@ -87,6 +103,26 @@ require_once __DIR__.'/../partials/navbar.php';
             <td class="text-center"><?= $p['age'] ?></td>
             <td class="text-center"><?= $p['sex'] ?></td>
             <td class="text-center"><?= htmlspecialchars($p['tb_case_number']) ?></td>
+            <td class="text-center">
+              <?php
+              $outcomes = [
+                'active' => 'Active',
+                'cured' => 'Cured',
+                'treatment_completed' => 'Completed',
+                'died' => 'Died',
+                'lost_to_followup' => 'Lost',
+                'failed' => 'Failed',
+                'transferred_out' => 'Transferred'
+              ];
+              $status = $outcomes[$p['treatment_outcome']] ?? $p['treatment_outcome'];
+              $badgeClass = '';
+              if ($p['treatment_outcome'] === 'active') $badgeClass = 'bg-primary';
+              elseif (in_array($p['treatment_outcome'], ['cured', 'treatment_completed'])) $badgeClass = 'bg-success';
+              elseif ($p['treatment_outcome'] === 'died') $badgeClass = 'bg-danger';
+              else $badgeClass = 'bg-warning';
+              ?>
+              <span class="badge <?= $badgeClass ?> text-white"><?= htmlspecialchars($status) ?></span>
+            </td>
             <td class="text-center">
               <?php if (!empty($p['philhealth_id'])): ?>
                 <?= htmlspecialchars(substr($p['philhealth_id'], 0, 2) . '-' . substr($p['philhealth_id'], 2, 9) . '-' . substr($p['philhealth_id'], 11, 1)) ?>
