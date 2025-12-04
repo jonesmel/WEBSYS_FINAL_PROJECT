@@ -17,7 +17,14 @@ $incoming = count(ReferralModel::getIncomingForBarangay($barangay));
 $received = count(ReferralModel::getReceivedByBarangay($barangay));
 
 $notifs = NotificationModel::getByUser($_SESSION['user']['user_id']);
-$pending = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
+// For health workers, show both unsent notifications AND sent health worker alerts that are unread
+$unsent = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
+$sentAlerts = array_filter($notifs, fn($n) =>
+    $n['is_sent'] == 1 &&
+    $n['is_read'] == 0 &&
+    $n['type'] === 'health_worker_alert'
+);
+$pending = array_merge($unsent, $sentAlerts);
 ?>
 
 <div class="container py-4">
@@ -61,27 +68,52 @@ $pending = array_filter($notifs, fn($n) => $n['is_sent'] == 0);
       </div>
     </div>
 
-    <div class="col-md-8">
+<div class="col-md-8">
       <div class="card shadow-sm p-3">
         <h5>Pending Follow-ups & Notifications</h5>
+        <?php
+        // Debug: Show all notifications for this user
+        echo "<!-- DEBUG: " . count($notifs) . " notifications found -->";
+        echo "<!-- DEBUG: " . count($unsent) . " unsent, " . count($sentAlerts) . " sent alerts -->";
+        foreach($notifs as $n) {
+          echo "<!-- NOTIF: type={$n['type']} sent={$n['is_sent']} read={$n['is_read']} title={$n['title']} -->";
+        }
+        ?>
         <?php if (empty($pending)): ?>
           <p class="text-muted mb-0">No pending follow-ups.</p>
         <?php else: ?>
         <div class="table-responsive mt-2">
-          <table class="table table-bordered table-sm align-middle">
-            <thead>
-              <tr>
-                <th>Patient Code</th>
+          <table class="table table-striped table-bordered table-hover align-middle">
+            <thead class="table-light">
+              <tr style="text-align: center;">
+                <th>Alert</th>
                 <th>Type</th>
-                <th>Scheduled</th>
+                <th>Date</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach ($pending as $p): ?>
+              <?php
+                // Get patient info if available
+                $patientCode = '';
+                if (!empty($p['patient_id'])) {
+                  $pdo = getDB();
+                  $stmt = $pdo->prepare("SELECT patient_code FROM patients WHERE patient_id = ?");
+                  $stmt->execute([$p['patient_id']]);
+                  $patient = $stmt->fetch();
+                  $patientCode = $patient ? $patient['patient_code'] : $p['patient_id'];
+                }
+              ?>
               <tr>
-                <td><?=htmlspecialchars($p['patient_id'])?></td>
-                <td><?=htmlspecialchars($p['type'])?></td>
-                <td><?=htmlspecialchars($p['scheduled_at'])?></td>
+                <td class="text-center"><strong><?=$p['title']?></strong><?php if(!empty($patientCode)): ?> <em>(Patient: <?=$patientCode?>)</em><?php endif; ?></td>
+                <td class="text-center"><?php if($p['type'] === 'health_worker_alert'): ?><span class="badge bg-warning">Action Required</span><?php else: ?><?=$p['type']?><?php endif; ?></td>
+                <td class="text-center"><?=$p['scheduled_at'] ?: date('M j, Y', strtotime($p['created_at']))?></td>
+                <td class="text-center">
+                  <?php if($p['link']): ?>
+                    <a href="<?=$p['link']?>" class="btn btn-sm btn-primary">View</a>
+                  <?php endif; ?>
+                </td>
               </tr>
               <?php endforeach; ?>
             </tbody>

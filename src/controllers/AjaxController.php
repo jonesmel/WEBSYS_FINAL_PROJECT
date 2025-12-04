@@ -107,6 +107,7 @@ class AjaxController {
 
         $q = trim($_GET['q'] ?? '');
         $barangay = trim($_GET['barangay'] ?? '');
+        $outcome = trim($_GET['treatment_outcome'] ?? '');
         $userRole = $_SESSION['user']['role'] ?? null;
         $userBarangay = $_SESSION['user']['barangay_assigned'] ?? null;
 
@@ -150,6 +151,11 @@ class AjaxController {
             // partial match so typed fragments work
             $sql .= " AND p.barangay LIKE ?";
             $params[] = "%$barangay%";
+        }
+
+        if ($outcome !== '') {
+            $sql .= " AND p.treatment_outcome = ?";
+            $params[] = $outcome;
         }
 
         $sql .= " ORDER BY p.created_at DESC";

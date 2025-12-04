@@ -201,6 +201,8 @@ function clearFilters(form) {
   const qInput = form.querySelector("input[name='q']");
   const brgySelect = form.querySelector("select[name='barangay']");
   const refBrgySelect = form.querySelector("select[name='referring_barangay']");
+  const treatmentOutcomeSelect = form.querySelector("select[name='treatment_outcome']");
+
   if (qInput) {
     qInput.value = '';
     qInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -230,6 +232,10 @@ function clearFilters(form) {
       }
     }
     refBrgySelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  if (treatmentOutcomeSelect) {
+    treatmentOutcomeSelect.value = '';
+    treatmentOutcomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
   }
 }
 
@@ -540,7 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
         referring_barangay = refRealSelect.getAttribute('data-typed-value') || '';
       }
 
-      const url = `/WEBSYS_FINAL_PROJECT/public/?route=ajax/${cfg.endpoint}&q=${encodeURIComponent(q)}&barangay=${encodeURIComponent(barangay)}&referring_barangay=${encodeURIComponent(referring_barangay)}`;
+      const treatmentOutcome = form.querySelector("select[name='treatment_outcome']") ? form.querySelector("select[name='treatment_outcome']").value : '';
+      const url = `/WEBSYS_FINAL_PROJECT/public/?route=ajax/${cfg.endpoint}&q=${encodeURIComponent(q)}&barangay=${encodeURIComponent(barangay)}&referring_barangay=${encodeURIComponent(referring_barangay)}&treatment_outcome=${encodeURIComponent(treatmentOutcome)}`;
       const tbody = document.querySelector(cfg.tbody);
       if (tbody) tbody.innerHTML = `<tr><td colspan="${cfg.cols}" class="text-center text-muted py-3"><i class="bi bi-arrow-repeat spinning"></i> Loading...</td></tr>`;
 
@@ -705,11 +712,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 220);
 
     // wire events
+    const treatmentOutcomeSelect = form.querySelector("select[name='treatment_outcome']");
     if (qInput) qInput.addEventListener('input', doFetch);
     if (brgyInput) brgyInput.addEventListener('input', doFetch);
     if (realSelect) realSelect.addEventListener('change', doFetch);
     if (refBrgyInput) refBrgyInput.addEventListener('input', doFetch);
     if (refRealSelect) refRealSelect.addEventListener('change', doFetch);
+    if (treatmentOutcomeSelect) treatmentOutcomeSelect.addEventListener('change', doFetch);
 
     // this prevents normal form submit from reloading the page when JS is available
     form.addEventListener('submit', e => { e.preventDefault(); });
